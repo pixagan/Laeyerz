@@ -1,2 +1,3 @@
 # Laeyerz
-A Mern Document App built to Demonstrate Integrations with LLM models, RAG and more
+A Simple RAG / Agentic Framework to demonstrate the concepts.
+Also setup to help you build your LLMs or Agentic apps over without having to rebuild existing pieces.
