@@ -9,7 +9,7 @@ You can find the source code in the [GitHub repository](https://github.com/pixag
 Download the repository and install the dependencies.
 
 ```bash
-git clone https://github.com/laeyerz/laeyerz.git
+git clone https://github.com/pixagan/Laeyerz.git
 cd laeyerz
 pip install -r requirements.txt
 ```
