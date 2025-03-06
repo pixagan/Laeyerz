@@ -1,0 +1,15 @@
+/laeyerz/.env
+laeyerz.egg-info/
+/laeyerz/__pycache__/
+/laeyerz/memory/__pycache__/
+/laeyerz/llms/__pycache__/
+/laeyerz/memory/nosqldb/__pycache__/
+/laeyerz/memory/vectordbs/__pycache__/
+/laeyerz/memory/sqldb/__pycache__/
+/laeyerz/textsplitters/__pycache__/
+/laeyerz/utils/__pycache__/
+/laeyerz/embeddings/__pycache__/
+/laeyerz/monitor/__pycache__/
+/laeyerz/memory/nosqldb/__pycache__/
+/laeyerz/memory/vectordbs/__pycache__/
+/laeyerz/memory/sqldb/__pycache__/
