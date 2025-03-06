@@ -1,12 +1,10 @@
-Laeyerz is an open source, easy to use self-learning, opinionated memory focussed, RAG framework. 
-Designed to be setup and used with minimal effort. 
+# Laeyerz is an open source, easy to use self-learning, opinionated memory focussed, RAG framework. 
+It is an attempt to make it easy for students and beginners to get started with RAG and Agentic applications.
 
-#Laeyerz is designed to be used in a multi-agent environment. 
+## Getting started
+Installing from git repo
 
-#Getting started
-You can find the source code in the [GitHub repository](https://github.com/laeyerz/laeyerz).
-
-#Installing from git repo
+You can find the source code in the [GitHub repository](https://github.com/pixagan/laeyerz).
 
 Download the repository and install the dependencies.
 
@@ -22,13 +20,13 @@ Now use pip install -e . to install the package locally.
 pip install -e .
 ```
 
-# Requirement
+## Requirement
 Laeyerz currently uses MongoDB for storing the session data.
 The VectorDB for now supports Pinecone.
 The LLM supports OpenAI.
 The EmbeddingModel supports OpenAI and HuggingFace.
 
-#To start using Laeyerz
+## To start using Laeyerz
 Create an instance of Laeyerz.
 
 
@@ -53,7 +51,7 @@ config = {
 ly = Laeyerz(settings)
 ```
 
-#Adding information to Laeyerz
+## Adding information to Laeyerz
 Laeyers accepts information in the form of documents.
 
 ```python
@@ -70,7 +68,7 @@ session = ly.create_session("Session Name")
 ```
 
 
-#Loading an Existing Session
+## Loading an Existing Session
 
 ```python
 session = ly.load_session("Session Name")
@@ -78,7 +76,7 @@ session = ly.load_session("Session Name")
 
 
 
-#Chatting with Layerz
+## Chatting with Layerz
 Once the session is loaded chat with Laeyerz. It will use the memories and the LLM to respond to the query.
 
 ```python
