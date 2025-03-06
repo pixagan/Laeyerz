@@ -88,4 +88,5 @@ response = curr_session.chat(
     }
 )
 ```
-
+## Examples
+Examples of basic use cases will be added in the examples folder. 
