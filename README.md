@@ -1,4 +1,4 @@
-# Laeyerz is an open source, easy to use self-learning, opinionated memory focussed, RAG framework. 
+# Laeyerz is an open source, self-learning, RAG framework. 
 It is an attempt to make it easy for students and beginners to get started with RAG and Agentic applications.
 
 ## Getting started
