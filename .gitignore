@@ -13,3 +13,4 @@ laeyerz.egg-info/
 /laeyerz/memory/nosqldb/__pycache__/
 /laeyerz/memory/vectordbs/__pycache__/
 /laeyerz/memory/sqldb/__pycache__/
+datasets

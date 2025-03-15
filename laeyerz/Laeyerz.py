@@ -9,7 +9,7 @@ from datetime import datetime
 
 from laeyerz.memory.Memory import Memory
 from laeyerz.llms.LLMx import LLMx
-from laeyerz.Document import Document
+from laeyerz.LDocument import LDocument
 
 #from KeyManager import KeyManager
 

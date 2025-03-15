@@ -1,7 +1,6 @@
 # Created: Anil Variyar
 # VectorDB
 
-from laeyerz.memory.vectordbs.ChromaAdapter import ChromaAdapter
 from laeyerz.memory.vectordbs.PineconeAdapter import PineconeAdapter
 
 class VectorDB:

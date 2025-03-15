@@ -2,6 +2,7 @@
 # Quickstart Dataloader
 
 from laeyerz.Laeyerz import Laeyerz
+from laeyerz.LDocument import LDocument
 
 import os
 from dotenv import load_dotenv
