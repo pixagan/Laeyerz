@@ -58,10 +58,15 @@ class VectorDB:
 
 
     def search(self, query_embedding, meta={}):
+
+        print("Searching for embeddings : ",  query_embedding)
         
         search_results = self.db.search(self.dbParams["index_name"], query_embedding, k_nearest=3, namespace=self.dbParams["namespace"])
 
         return search_results['matches']
+
+
+        
 
 
 

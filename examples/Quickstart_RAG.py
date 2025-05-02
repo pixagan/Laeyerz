@@ -36,7 +36,7 @@ print("Session List : ",session_list)
 ly.create_session("Session Test 1")
 
 
-curr_session = ly.load_session("Session Test 1")
+curr_session = ly.load_session_title("Session Test 1")
 print("Session : ",curr_session)
 
 #Chatting with the session

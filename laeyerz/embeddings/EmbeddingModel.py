@@ -36,3 +36,4 @@ class EmbeddingModel:
         embeddings_list = self.model.encode(sentences)
 
         return embeddings_list
+

@@ -16,7 +16,7 @@ default_messages = [
                 ]
 
 
-class OpenAIAdapter:
+class AnthropicAdapter:
 
     def __init__(self, model_name='gpt-4o-mini'):
         print("Initializing OpenAI adapter")

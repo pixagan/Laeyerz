@@ -26,7 +26,7 @@ class LLMx:
 
 
 
-    def run(self, instructions ,query, memories, params={}):
+    def run(self, instructions ,query, memories, params={}, tools = None):
         print("Query LLM Model")
 
         #generate the messaegs

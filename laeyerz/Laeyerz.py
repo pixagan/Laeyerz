@@ -63,11 +63,11 @@ class LaeyerzConfig:
 
 class Session:
 
-    def __init__(self, session_id, memory, llm):
+    def __init__(self, session_id, title, memory, llm):
         print("A Chat Session")
         #for each session have a set of keys that can be checked  for existenace
         self.session_id = session_id
-        self.title      = ""
+        self.title      = title
         self.memory     = memory
         self.llm        = llm
 
@@ -75,10 +75,14 @@ class Session:
         print("Setting up session")
 
 
-    def load_history(self, session_id):
+    def load_history(self):
         print("Loading session")
         
-        self.memory.load_session_history(self.session_id)
+        items = self.memory.load_session_history(self.session_id)
+
+        print("Chats : ", items)
+
+        return items
 
 
     def chat(self, query):
@@ -92,18 +96,22 @@ class Session:
         
         llm_response = self.llm.run(query["instructions"], query["query"], memories, params={})
 
-        llm_response["session_id"] = self.session_id
+        llm_response["session_id"]  = self.session_id
         llm_response["instruction"] = query["instructions"]
-        llm_response["query"] = query["query"]
+        llm_response["query"]       = query["query"]
 
         end_time = datetime.now()
 
         llm_response["start_time"] = start_time.isoformat()
-        llm_response["end_time"] = end_time.isoformat()
+        llm_response["end_time"]   = end_time.isoformat()
 
         
 
         self.memory.add_session_item(self.session_id, llm_response)
+
+
+        print("LLM Response : ", llm_response)
+
 
         return llm_response
 
@@ -120,12 +128,27 @@ class Laeyerz:
         self.llm      = LLMx(config['LLM'])
 
         #self.config   = Config(config)
+
+
+    def create_app(self, app_name, config):
+        print("Creating app")
+
+        self.memory.add_app(app_name)
+
+        return app_name
+
+
+    def load_app(self, app_name):
+        print("Loading app")
+
+        self.memory.load_app(app_name)
+
+        return app_name
+
         
 
     def setup(self, config):
         print("Setting up steps")
-
-
 
 
 
@@ -151,7 +174,7 @@ class Laeyerz:
         isCreated = self.memory.add_session(title)
 
         if(isCreated):
-            curr_session = self.load_session(title)
+            curr_session = self.load_session_title(title)
 
             return curr_session
 
@@ -160,12 +183,22 @@ class Laeyerz:
             return False
 
 
-    def load_session(self, title):
+    def load_session_title(self, title):
         print("Setting session")
 
         curr_session = self.memory.load_session(title)
 
-        loaded_session = Session(curr_session['id'], self.memory, self.llm)
+        loaded_session = Session(curr_session['id'], curr_session['title'], self.memory, self.llm)
+        
+        return loaded_session
+
+
+    def load_session_by_id(self, session_id):
+        print("Setting session")
+
+        curr_session = self.memory.load_session_by_id(session_id)
+
+        loaded_session = Session(curr_session['id'], curr_session['title'], self.memory, self.llm)
         
         return loaded_session
 

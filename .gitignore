@@ -14,3 +14,4 @@ laeyerz.egg-info/
 /laeyerz/memory/vectordbs/__pycache__/
 /laeyerz/memory/sqldb/__pycache__/
 datasets
+testcases

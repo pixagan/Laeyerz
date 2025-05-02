@@ -11,12 +11,28 @@ class KeyManager:
     
     def __init__(self):
         print("Load API Keys")
+        self.keys = {}
 
 
     def loadKeys(self):
         print("Keys")
 
 
+    def checkKey(self, key):
+        if key in self.keys:
+            return self.keys[key]
+        else:
+            return None
+
+
+    def check_validity(self, key):
+        if key in self.keys:
+            return True
+        else:
+            return False
+
+
+        
 
 
 

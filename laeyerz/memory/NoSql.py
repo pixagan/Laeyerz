@@ -43,10 +43,20 @@ class NoSql:
 
 
 
+
+
     def load_session(self, title):
         print("Reading session")
 
         curr_session = self.db.read_one('session', {'title': title})
+
+        return curr_session
+
+
+    def load_session_by_id(self, session_id):
+        print("Reading session")
+
+        curr_session = self.db.read_one('session', {'id': session_id})
 
         return curr_session
 
@@ -56,6 +66,13 @@ class NoSql:
 
         self.db.create('chats', item)
 
+
+    def load_items(self, session_id):
+        print("Loading items")
+
+        items = self.db.read('chats', {'session_id': session_id})
+
+        return items
 
 
 
