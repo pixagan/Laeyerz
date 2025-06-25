@@ -2,15 +2,22 @@ from laeyerz.memory.Memory import Memory
 from laeyerz.llms.LLMx import LLMx
 from laeyerz.LDocument import LDocument
 
+import uuid
+
 class Conversations:
 
-    def __init__(self, session_id, title, memory, llm):
+    def __init__(self, session_id=None, title=None, memory=None, llm=None):
         print("A Chat Session")
         #for each session have a set of keys that can be checked  for existenace
         self.session_id = session_id
         self.title      = title
         self.memory     = memory
         self.llm        = llm
+
+
+    def new_session(self, session_id, title, memory, llm):
+        self.session_id = session_id
+        self.title      = title
 
 
     def setup(self, config):
@@ -25,6 +32,7 @@ class Conversations:
         print("Chats : ", items)
 
         return items
+
 
 
     def chat(self, query):
@@ -57,6 +65,25 @@ class Conversations:
 
         return llm_response
 
+
+    def add_chat(self, chat):
+
+        print("Adding chat")
+
+        self.memory.add_session_item(self.session_id, chat)
+
+
+    def retrieve_memories(self, query):
+
+        print("Retrieving memory")
+
+        memories = self.memory.search(self.session_id, query)
+
+        print("Memories : ", memories)
+
+        
+
+        return memories
 
 
 

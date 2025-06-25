@@ -1,5 +1,8 @@
 # Created: Anil Variyar
 # Flow is a graph structure to create complex data and task flows
+
+import json
+
 from laeyerz.flow.Edge import Edge
 from laeyerz.flow.Node import Node
 from laeyerz.flow.AppState import AppState
@@ -181,6 +184,35 @@ class Flow:
 
         else:
             raise ValueError("Flow is finalized")
+
+
+
+
+    def import_flow(self, filename):
+
+        with open(filename, 'r') as f:
+            model = json.load(f)   
+
+        self.app_name = model['app_name']
+        self.nodes = model['nodes']
+        self.edges = model['edges']
+
+        self.node_map = {}
+        self.edge_map = {}
+        
+
+
+
+    def export_flow(self, filename):
+
+        model = {
+            'app_name': self.app_name,
+            'nodes': self.nodes,
+            'edges': self.edges
+        }
+
+        with open(filename, 'w') as f:
+            json.dump(model, f)
 
 
 

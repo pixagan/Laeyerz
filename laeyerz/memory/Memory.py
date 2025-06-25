@@ -1,7 +1,7 @@
 # Created: Anil Variyar
 # Memory
 
-from laeyerz.memory.VectorDB import VectorDB
+from laeyerz.memory.VectorStore import VectorStore
 from laeyerz.memory.NoSql import NoSql
 from laeyerz.memory.GraphDB import GraphDB
 
@@ -14,7 +14,7 @@ class Memory:
     def __init__(self, config):
         print("Initializing Memory")
 
-        self.vectorDB       = VectorDB(config["VectorDB"], config["VectorDB_Params"])
+        self.vectorDB       = VectorStore(config["VectorDB"], config["VectorDB_Params"])
         
         self.embeddingModel = EmbeddingModel(config["EmbeddingModel"]["vendor"], config["EmbeddingModel"]["model_name"])
 

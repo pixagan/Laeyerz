@@ -17,7 +17,17 @@ class MongoAdapter:
         #self.collection = self.db[os.getenv('MONGO_COLLECTION')]
 
 
-    def create(self, collection_name, data):
+    def create_collection(self, collection_name):
+        """Create a new collection in MongoDB"""
+        self.db[collection_name] = self.client[collection_name]
+
+
+    def get_collection(self, collection_name):
+        """Get a collection from MongoDB"""
+        return self.db[collection_name]
+
+
+    def create_doc(self, collection_name, data):
         """Create a new document in MongoDB"""
        
         newItem = self.db[collection_name].insert_one(data)
@@ -33,8 +43,6 @@ class MongoAdapter:
         self.db[collection_name].insert_many(data_list)
         
         
-
-
 
     def read(self, collection_name, query):
         """Read documents matching the query"""

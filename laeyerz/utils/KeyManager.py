@@ -1,5 +1,5 @@
 # Created: Anil Variyar
-# Key Manager
+# Key Manager, check if keys exist, Does not store any keys in memory
 
 import os
 from dotenv import load_dotenv

@@ -10,9 +10,11 @@ PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 
 class PineconeAdapter:
     
-    def __init__(self, spec=None):
+    def __init__(self, api_key=None, spec=None):
+
         self.pc   = Pinecone(api_key=PINECONE_API_KEY)
         self.spec = ServerlessSpec(cloud='aws', region='us-east-1')
+
 
     def setup(self, config):
         print("Setting up Pinecone")
@@ -101,8 +103,17 @@ class PineconeAdapter:
             include_values=False,
             include_metadata=True
         )
+
+        clean_out = []
+
+        for result in results['matches']:
+            clean_out.append({
+                "id": result['id'],
+                "metadata": result['metadata'],
+                "score": result['score']
+            })
         
-        return results
+        return clean_out
 
 
 

@@ -16,6 +16,8 @@ from laeyerz.memory.VectorStore import VectorStore
 
 from laeyerz.tools.DataParser import DataParser
 #from laeyerz.tools.TextOutput import TextOutput
+from laeyerz.LaeyerzApp import LaeyerzApp
+
 
 import numpy as np
 
@@ -188,3 +190,8 @@ input_data = {
 
 output = rag_flow.evaluate(input_data)
 print("RAG : ",output)
+
+
+
+LaeyerzApp.run()
+#---------

@@ -25,6 +25,25 @@ class TextSplitter:
         return chunks
 
 
+    def split(self, text, chunk_size = 200, padding = 30):
+
+        sentences = text.split(".")
+    
+        chunks = []
+        current_chunk = ""
+
+        for sentence in sentences:
+
+            current_chunk = current_chunk + sentence
+            chunk_length = len(current_chunk.split(" "))
+            if(chunk_length>chunk_size):
+                chunks.append(current_chunk)
+                current_chunk = ""
+
+
+        return chunks
+
+
     def into_sentences(self, text):
 
 

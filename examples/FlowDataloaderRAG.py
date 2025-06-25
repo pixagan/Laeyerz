@@ -7,7 +7,7 @@ from laeyerz.flow.Model import Model
 from laeyerz.utils.KeyManager import KeyManager
 
 from laeyerz.embeddings.Embedding import Embedding
-from laeyerz.memory.VectorDB import VectorDB
+from laeyerz.memory.VectorStore import VectorStore
 
 
 def fileloader(app_state):

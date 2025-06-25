@@ -22,7 +22,7 @@ pip install -e .
 
 ## Requirement
 Laeyerz currently uses MongoDB for storing the session data.
-The VectorDB for now supports Pinecone.
+The VectorStore for now supports Pinecone.
 The LLM supports OpenAI.
 The EmbeddingModel supports OpenAI and HuggingFace.
 

@@ -5,7 +5,7 @@ import os
 
 
 
-class TextLoad:
+class TextLoader:
 
     def __init__(self):
         print("Loading Text")
@@ -13,19 +13,15 @@ class TextLoad:
 
 
     # Extract =text using PyPDF
-    def load_file(self, file_path):
+    def load(self, file_path):
 
         text = None
 
         with open(file_path, "r") as file:
             text = file.read()  # Returns a list of lines
         
-        
-        
 
-        lines = text.split("\n")
-
-        print(lines)
+        return text
 
         
 

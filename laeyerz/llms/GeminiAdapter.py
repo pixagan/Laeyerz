@@ -2,8 +2,6 @@
 # OpenAI Adapter
 
 import os
-import re
-import json
 from openai import OpenAI
 
 from dotenv import load_dotenv
@@ -18,16 +16,15 @@ default_messages = [
                 ]
 
 
-class OpenAIAdapter:
+class GeminiAdapter:
 
-    def __init__(self, model_name='gpt-4o-mini'):
-        print("Initializing OpenAI adapter")
+    def __init__(self, model_name='gemini-1.5-flash'):
+        print("Initializing Gemini adapter")
 
         self.model = model_name
         self.stream = False
 
         self.client =  OpenAI(api_key=OPENAI_API_KEY)
-
 
 
     def model_parameters(self, model_name):
@@ -64,7 +61,6 @@ class OpenAIAdapter:
         return messages
 
 
-
     def run(self, model_name, instructions, query, memories, params={}, tools = None):
         print("Run")
 
@@ -97,59 +93,24 @@ class OpenAIAdapter:
 
         parsed_response = {
             "completion_id": response.id,
-            "model": response.model,
             "response": response.choices[0].message.content,
             "created": response.created,
-            "finish_reason": response.choices[0].finish_reason,
+            "model": response.model,
             #"usage": response.usage,
             "tokens_used": response.usage.total_tokens,
             "tokens_prompt": response.usage.prompt_tokens,
             "tokens_completion": response.usage.completion_tokens,
             "service_tier": response.service_tier,
-            "tool_calls": [],
         }
-
-
-        tool_calls = response.choices[0].message.tool_calls
-
-        tool_call_extracted = []
-
-        if tool_calls:
-            for tc in tool_calls:
-                function_name = tc.name
-                arguments = json.loads(tc.function.arguments)
-                tool_call_extracted.append({
-                    "function_name": function_name,
-                    "arguments": arguments
-                })
-
-        parsed_response["tool_calls"] = tool_call_extracted
-        
 
        
         return parsed_response
-
-
-
-    def extract_json(self, text_in):
-
-        json_str = re.search(r'```json(.*?)```', text_in, re.DOTALL)
-        if json_str:
-            json_clean = json_str.group(1).strip()
-            try:
-                json_out = json.loads(json_clean)
-                print("Parsed JSON:", json_out)
-                return json_out
-            except json.JSONDecodeError as e:
-                print("JSON parsing error:", e)
-        else:
-            print("No JSON found in input.")
 
 # ------------------------------------------------------------------
 
 def main():
 
-    chat = OpenAIAdapter()
+    chat = GeminiAdapter()
     output = chat.run()
     print(output)
 

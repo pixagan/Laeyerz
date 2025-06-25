@@ -1,7 +1,7 @@
 # Created: Anil Variyar
 # NoSQL
 
-from laeyerz.memory.nosqldb.MongoAdapter import MongoAdapter
+from laeyerz.connectors.databases.MongoAdapter import MongoAdapter
 
 class NoSql:
     def __init__(self, dbtype='Mongo'):

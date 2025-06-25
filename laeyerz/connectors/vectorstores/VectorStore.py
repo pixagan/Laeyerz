@@ -3,15 +3,15 @@
 
 from laeyerz.memory.vectordbs.PineconeAdapter import PineconeAdapter
 
-class VectorDB:
+class VectorStore:
 
-    def __init__(self, dbtype='Pinecone', dbParams=None):
+    def __init__(self, dbtype='Pinecone', dbParams=None, api_key=None):
         print("Initializing VectorDB")
 
         self.dbParams = dbParams
 
         if(dbtype == 'Pinecone'):
-            self.db = PineconeAdapter()
+            self.db = PineconeAdapter(api_key)
 
             #check if index exists
             indexExists = self.db.check_index(self.dbParams["index_name"])
@@ -63,12 +63,10 @@ class VectorDB:
         
         search_results = self.db.search(self.dbParams["index_name"], query_embedding, k_nearest=3, namespace=self.dbParams["namespace"])
 
-        return search_results['matches']
+        return search_results
 
 
         
-
-
 
 #----------------------------------------------------------------------
 

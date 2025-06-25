@@ -11,20 +11,6 @@ class Prompt:
         #query
         query = inputs["Query"]
         
-        llm_response = self.llm.run(instructions, query, memories, params={})
-        #construct the prompt
-
-
-
-
-
-
-
-        #user query
-        
-        #get t
-
-
 
         return self.prompt
 

@@ -6,10 +6,18 @@ import pdfplumber
 import pymupdf # imports the pymupdf library
 import os
 
+class PyPdfConnector:
+    
+    def __init__(self):
+        self.reader = PdfReader()
+
+    def load_pdf(self, filename):
+        return self.reader.read(filename)
 
 
 
-class PdfLoad:
+
+class PyMuPdfConnector:
 
     def __init__(self):
         print("Loading Pdf")

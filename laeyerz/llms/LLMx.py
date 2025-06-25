@@ -19,6 +19,13 @@ class LLMx:
 
         if vendor == 'OpenAI':
             self.model      = OpenAIAdapter(model_name)
+
+        elif vendor == 'Anthropic':
+            self.model      = AnthropicAdapter(model_name)
+
+        elif vendor == 'Gemini':
+            self.model      = GeminiAdapter(model_name)
+
         else:
             self.model      = None
 
@@ -26,7 +33,7 @@ class LLMx:
 
 
 
-    def run(self, instructions ,query, memories, params={}, tools = None):
+    def run(self, instructions, query, memories, model_name="", params={}, tools = None):
         print("Query LLM Model")
 
         #generate the messaegs
