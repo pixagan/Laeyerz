@@ -1,235 +1,379 @@
-# Created: Anil Variyar
-# Flow is a graph structure to create complex data and task flows
+# Copyright 2025 Pixagan Technologies
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+"""
+Flow module for managing workflow execution
+in the Laeyerz framework.
+"""
+import uuid
 import json
 
-from laeyerz.flow.Edge import Edge
-from laeyerz.flow.Node import Node
+from laeyerz.flow.Node import Node  
 from laeyerz.flow.AppState import AppState
-
-from laeyerz.flow.Node import StartNode, EndNode
+from laeyerz.flow.Edge import Edge
+from laeyerz.flow.Evals import Evals
+from laeyerz.flow.Observe import Observe
 
 class Flow:
-    
-    def __init__(self):
 
-        self.nodes = []
-        self.edges = []
+    def __init__(self,name=""):
 
-        self.start_node = StartNode()
-        self.end_node   = EndNode()
+        self.id             = ""
+        self.name           = name
+        self.description    = ""
+        
+        self.nodes          = []
+        self.node_map       = {}
+        self.node_id_map    = {}
 
-        self.start = 0
-        self.stack = []
-        self.state = {}
-        self.appState = AppState()
+        self.edges          = []
+        self.edge_map       = {}
+        
+        self.state          = AppState()
+        self.observe        = Observe()
+
+        self.components     = {}
+        self.components_map = {}
+        self.flowtype = "workflow"  # agent
+
         self.start = None
-        self.is_finalized = False
+        self.end   = None
+
+        self.max_steps = 50
+
+        self.output = "final_output"
+
+        self.steps = []
 
 
-        self.node_map = {}
-        self.edge_map = {}
+    def create(self, flow_name):
+
+        self.name = flow_name
+        self.id   = str(uuid.uuid4())
 
 
+    def get_node(self, node_id):
 
-    def add_node(self, node_id, model):
+        for node in self.nodes:
+            if(node.id == node_id):
+                return node
 
-        new_node          = Node(node_id, model)
-
-        self.nodes.append(new_node)
-
-        self.node_map[new_node.id] = len(self.nodes) - 1
-
-
-
-    def add_edge(self, edge_0, edge_1, condition=None):
-
-        #create the relevant edge
-        new_edge = Edge(edge_0, edge_1, condition)
-
-        self.edges.append(new_edge)
-
-        #then add it to the edges list
+        return None
 
 
 
-    def delete_node(self, node):
+    def set_flow(self, flow_in):
 
-        #remove the node from the nodes list
-        if(not self.is_finalized):
-            self.nodes.remove(node)
+        self.id = flow_in["id"]
+        self.name = flow_in["name"]
+        self.description = flow_in["description"]
 
-
-
-        else:
-            raise ValueError("Flow is finalized")
-
+        for node in flow_in["nodes"]:
+            newNode = Node(node)
+            self.nodes.append(newNode)
 
 
-    def remove_edge(self, edge):
-
-        #remove the edge from the edges list
-        if(not self.is_finalized):
-            self.edges.remove(edge)
-
-        else:
-            raise ValueError("Flow is finalized")
 
 
+    def load_file(self, file_path):
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        return data
+
+
+    def create_node(self, title, function_in):
+        newNode = Node(title)
+        newNode.set_function(function_in)
+        self.nodes.append(newNode)
+        return newNode
+
+
+    def add_node(self, node):
+
+        self.nodes.append(node)
+        self.node_map[node.name]  = self.nodes.index(node)
+        self.node_id_map[node.id] = self.nodes.index(node)
+
+        self.state.add_section(node.name)
+
+
+        # component = component_mapping(node.component_name)
+        # if(component.name not in self.components.keys()):
+        #     self.components[component.name] = component
+        
+        # self.appflow.add_node("Embedding_Model", embedding_function)
+
+
+    def run_node(self, node_id, inputs):
+        
+        outputs, next_node = self.nodes[self.node_id_map[node_id]].run(inputs)
+
+        return outputs
+
+
+    def delete_node(self, node_id):
+
+        if(node_id == self.start):
+            self.start = None
+            return True
+
+        if(node_id == self.end):
+            self.end = None
+            return True
+
+        index = 0
+        for node in self.nodes: 
+            print("Match node : ", node.id, node_id)
+            if(str(node.id) == str(node_id)):
+                print("Removing node : ", node.id, node.name)
+                self.nodes.remove(node)
+                self.state.delete_node(node_id)
+                print("Removed node : ", node.id, node.name)
+                return True
+            index += 1
+
+        return False
+
+
+    def set_action(self, component, action):
+
+        action_function = self.components[component].get_action(action)
+
+        #check if component has the action
+        self.appflow.set_action()
+
+
+
+    def update_node_title(self, node_id, title):
+        self.nodes[self.node_id_map[node_id]].name = title
+
+        return self.nodes[self.node_id_map[node_id]].to_dict()
+
+
+
+    def get_node_state(self, node_id):
+        return self.nodes[self.node_id_map[node_id]].state
 
 
     def finalize(self):
-
-        self.assign_edge_to_nodes()
-
-
-        # for edge in self.edges:    
-
-        #     self.nodes[self.node_map[edge.node_0]].targets.append(self.nodes[self.node_map[edge.node_1]])
-            
-        #     self.nodes[self.node_map[edge.node_1]].sources.append(self.nodes[self.node_map[edge.node_0]])
-
-        #finalize the flow
-
-        #check if the flow is valid
+        print("Finalizing Flow : ")
 
 
-    def assign_edge_to_nodes(self):
+    def add_edge(self, node1, node2):
+
+        #check node exists
+        node1_name = ""
+        node2_name = ""
+       
+
+        if(node1 == 'START'):
+            self.start = node2
+            #self.start_node.targets.append(node_1)
+
+            self.nodes[self.node_map[node2]].sources.append('START')
+            node1_name = node1
+            cNode2 = self.nodes[self.node_map[node2]]
+            node2_name = cNode2.name
+
+            #self.nodes[self.node_map[node2]].inputs.append("inputs")
+
+
+
+
+
+        if(node2 == 'END'):
+            self.end = node1
+            #self.end_node.sources.append(node_0)
+            #self.end_node.targets.append('END_NODE')
+
+            self.nodes[self.node_map[node1]].targets.append('END')
+
+            cNode1 = self.nodes[self.node_map[node1]]
+            node1_name = cNode1.name
+            node2_name = node2
+
+
+
+        if(node1 != 'START' and node2 != 'END' and node1 != node2):
+            self.nodes[self.node_map[node1]].targets.append(node2)
+            self.nodes[self.node_map[node2]].sources.append(node1)
+        
+            cNode1 = self.nodes[self.node_map[node1]]
+            node1_name = cNode1.name
+            cNode2 = self.nodes[self.node_map[node2]]
+            node2_name = cNode2.name
+
+        newEdge = Edge(node1, node2, node1_name+"-"+node2_name)
+
+        self.edges.append(newEdge)   
+
+        return newEdge.to_dict()
+
+       
+    def delete_edge(self, edge_id):
 
         for edge in self.edges:
+            print("Match edge : ", edge.id, edge_id)
+            if(str(edge.id) == str(edge_id)):
+                print("Removing edge : ", edge.id, edge.label)
 
-            node_0 = edge.node_0
-            node_1 = edge.node_1
-            
-            if(node_0 == 'START'):
-                self.start = node_1
-                self.start_node.targets.append(node_1)
+                print(edge.to_dict())
 
-                self.nodes[self.node_map[node_1]].sources.append(node_0)
+                #remove connection from nodes
+                if(edge.source != "START" and edge.target != "END"):
+                    self.nodes[self.node_map[edge.source]].targets.remove(edge.target)
+                    self.nodes[self.node_map[edge.target]].sources.remove(edge.source)
+                    self.edges.remove(edge)
+                    return True
 
-            if(node_1 == 'END'):
-                self.end = node_0
-                self.end_node.sources.append(node_0)
-                #self.end_node.targets.append('END_NODE')
+                if(edge.source == "START"):
+                    self.start = None
+                    self.nodes[self.node_map[edge.target]].sources.remove(edge.source)
+                    self.edges.remove(edge)
 
-                self.nodes[self.node_map[node_0]].targets.append('END_NODE')
+                    #update app state
+
+                    return True
+                
+                if(edge.target == "END"):
+                    self.end = None
+                    self.nodes[self.node_map[edge.source]].targets.remove(edge.target)
+                    self.edges.remove(edge)
+                    return True
 
 
-            if(node_0 != 'START' and node_1 != 'END'):
-                self.nodes[self.node_map[node_1]].sources.append(node_0)
-                self.nodes[self.node_map[node_0]].targets.append(node_1)
-            
-            
 
+                
 
-    def evaluate(self, input_data):
-
-        #get the node from the stack
-        outputs, next_node = self.start_node.evaluate(self.appState, input_data)
-
-        curr_node = self.nodes[self.node_map[next_node]]
-
+        return False
         
 
+    def set_node_action(self, node_id, action_name):
+        self.nodes[self.node_id_map[node_id]].set_action(action_name)
+        return action_name
+
+
+    def visualize(self):
+        self.appflow.visualize()
+
+
+    def run(self, input_data):
+
+        self.steps = []
+
+        for key, value in input_data.items():
+            self.state.update('Inputs',key, value)
+
+        curr_node = self.nodes[self.node_map[self.start]]
+
+        nSteps = 0
+
+        print("------------------------------------------------")
+        print("-------------- Starting Flow : ", self.name)
+        print("------------------------------------------------")
+
+
+        
         while curr_node is not None:
 
             print("Evaluating Node : ", curr_node.id)
+            
+            outputs, next_node   = curr_node.run(self.state)
 
-            outputs, next_node = curr_node.evaluate(self.appState)
+            print("Node : ",curr_node.name, outputs, next_node)
 
+            print("State : ", self.state)
 
-            if(next_node != 'END_NODE'):
+            self.steps.append({
+                "type": "node",
+                "node_id": curr_node.id,
+                "node_name": curr_node.name,
+                "node_output": outputs,
+                "text":""
+            })
+
+            print(" ------------------------------------------------ ")
+
+            nSteps += 1
+
+            if nSteps > self.max_steps:
+                break
+
+            if(next_node != 'END'):
                 curr_node = self.nodes[self.node_map[next_node]]
             else:
                 break
 
 
-        flow_output = self.end_node.evaluate(self.appState)
+        flow_output = self.state.get_section('Outputs')
+
+        #print("Flow Output : ", self.output, flow_output)
+
+        #flow_output = self.end_node.evaluate(self.appState)
 
         return flow_output
 
 
 
-    def export_state(self):
+    def to_dict(self):
 
-        return self.state
-
-
-
-
-    def add_nodes(self, nodes):
-
-        #create the relevant node
-
-        #then add it to the nodes list
-
-        if(not self.is_finalized):
-            self.nodes.extend(nodes)
-
-            for inode in range(0, len(self.nodes)):
-                self.node_map[self.nodes[inode].id] = inode
-
-        else:
-            raise ValueError("Flow is finalized")
+        nodes_str = []
+        for node in self.nodes:
+            nodes_str.append(node.to_dict())
+        
+        edges_str = []
+        for edge in self.edges:
+            edges_str.append(edge.to_dict())
+        
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "nodes": nodes_str, 
+            "edges": edges_str,
+            "state": {}
+            }
 
 
+    def export_flow(self):
 
-    def add_edges(self, edges):
-
-        #update the node to know its sources and targets
-
-        #then add it to the edges list
-        if(not self.is_finalized):
-            self.edges.extend(edges)
-
-        else:
-            raise ValueError("Flow is finalized")
+        return self.to_dict()
 
 
 
 
-    def import_flow(self, filename):
+    def finalize_flow(self):
+        for node in self.nodes:
+            node.finalize()
 
-        with open(filename, 'r') as f:
-            model = json.load(f)   
 
-        self.app_name = model['app_name']
-        self.nodes = model['nodes']
-        self.edges = model['edges']
+    def validate_flow(self):
+        for node in self.nodes:
+            node.validate()
 
-        self.node_map = {}
-        self.edge_map = {}
+
+    def view(self):
+        pass
         
 
 
 
-    def export_flow(self, filename):
-
-        model = {
-            'app_name': self.app_name,
-            'nodes': self.nodes,
-            'edges': self.edges
-        }
-
-        with open(filename, 'w') as f:
-            json.dump(model, f)
-
-
-
-# ------------------------------------------------------------------
 
 def main():
 
-    appflow = Flow()
+    flow = Flow()
 
-    
-
-
-#----------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()
-
-
-#----------------------------------------------------------------------
-
