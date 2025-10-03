@@ -95,3 +95,6 @@ venv.bak/
 *.swp
 *.swo
 *~
+
+.DS_Store
+laeyerz-ui/.DS_Store
