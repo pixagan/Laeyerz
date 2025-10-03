@@ -13,12 +13,16 @@ laeyerz.egg-info/
 /laeyerz/memory/nosqldb/__pycache__/
 /laeyerz/memory/vectordbs/__pycache__/
 /laeyerz/memory/sqldb/__pycache__/
-laeyerz/ui
+/laeyerz/flow/__pycache__
 datasets
 testcases
 dummy
-laeyerz-ui
 examples
+
+laeyerz-ui/node_modules/
+laeyerz-ui/build/
+laeyerz-ui/.env
+laeyerz-ui/package-lock.json
 
 
 # Python cache files and directories

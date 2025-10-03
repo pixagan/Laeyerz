@@ -50,3 +50,6 @@ node.run(app_state)
 
 
 print(app_state.get_all())
+
+node_d = node.to_dict()
+print("Node Dictionary : ", node_d)

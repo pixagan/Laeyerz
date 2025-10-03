@@ -346,6 +346,104 @@ class Flow:
             }
 
 
+    def to_view(self):
+
+        nodes_str = []
+
+        startNode = {
+          "id": 'START',
+          "name": 'START',
+          "node_id": 'START',
+          "component": 'TextInput',
+          "data": { 
+            "label": 'START',
+            "action": 'START-FLOW'
+          },
+          "type": 'cNode',
+          "position": { "x": 0, "y": 0 },
+          "inputs": ['text'],
+          "outputs": ['text'],
+          "code": 'print("Hello, World!")',
+          "state": 'idle',
+          "action": 'chatInput',
+          "style": {
+            "backgroundColor": "#e3d274",
+          }
+        }
+
+        nodes_str.append(startNode)
+
+        x_str = 0. + 10.0
+        y_str = 0. + 70.0
+
+        for node in self.nodes:
+
+            newNode = {
+                "id": node.name,
+                "node_id": node.id,
+                "name": node.name,
+                "component": 'General',
+                "data": { 
+                    "label": node.name,
+                    "action": 'UPDATE'
+                },
+                "type": 'cNode',
+                "position": { "x": x_str, "y": y_str },
+                "inputs": node.inputs,
+                "outputs": node.outputs,
+                "state": 'idle',
+                "action": 'chatInput',
+                "style": {
+                    "backgroundColor": "#e3d274",
+                }
+                }
+            nodes_str.append(newNode)
+
+            x_str = x_str + 10.0
+            y_str = y_str + 70.0
+        
+        
+
+        endNode = {
+          "id": 'END',
+          "name": 'END',
+          "node_id": 'END',
+          "component": 'TextInput',
+          "type": 'cNode',
+          "position": { "x": x_str, "y": y_str },
+          "data": { 
+            "label": 'END',
+            "action": 'END-FLOW'
+          },
+          "style": {
+            "backgroundColor": "#e3d274",
+          }
+        }
+
+        nodes_str.append(endNode)
+
+        for node in nodes_str:
+            print("--------------------------------")
+            print("Node : ", node)
+            print("--------------------------------")
+
+
+
+        edges_str = []
+
+        for edge in self.edges:
+            edges_str.append(edge.to_dict())
+        
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "nodes": nodes_str, 
+            "edges": edges_str,
+            "state": {}
+            }
+
+
     def export_flow(self):
 
         return self.to_dict()

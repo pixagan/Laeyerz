@@ -19,7 +19,6 @@ class AppState:
     def __init__(self):
 
         self.state = {
-            "app_state": "app_state",
             "Shared":{},
             "Inputs":{},
             "Outputs":{},
@@ -73,6 +72,13 @@ class AppState:
 
     def delete_node(self, node_id):
         del self.state[str(node_id)]
+
+
+    def to_view(self):
+
+        keys = list(self.state.keys())
+
+        return keys, self.state
 
 
     

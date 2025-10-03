@@ -228,7 +228,8 @@ class Node:
     def to_dict(self):
 
         return {
-            'id': self.id,
+            "node_id": self.id,
+            'id': self.name,
             'name': self.name,
             'metadata': self.metadata,
             'view': self.view,

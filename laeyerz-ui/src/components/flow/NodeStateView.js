@@ -1,0 +1,84 @@
+import React , { useState, useEffect,} from 'react'
+import { Card, Badge, InputGroup, Button } from 'react-bootstrap'
+import { ArrowBigDown } from 'lucide-react'
+
+import { useDispatch, useSelector } from 'react-redux'
+
+import AppStateItem from './AppStateItem'
+import axios from 'axios'
+
+
+import { LOAD_APP_STATE } from '../../constants/flowConstants'
+
+export const NodeStateView = ({currentNode, appState}) => {
+
+    const dispatch = useDispatch()
+
+    const [dataType, setDataType] = useState('')
+    const [dataSource, setDataSource] = useState('')
+    const [dataValue, setDataValue] = useState('')
+
+    const currentFlowR = useSelector(state => state.currentFlowR)
+    const { currentFlow } = currentFlowR
+
+    const flowAppStateR = useSelector(state => state.flowAppStateR)
+    const { flowAppState } = flowAppStateR
+
+    const loadAppStateRequest = async () => {
+        
+        const response = await axios.get(`/api/node/state/${currentNode.id}`)
+        console.log(response.data)
+        
+        var appState = JSON.parse(response.data.node_state)
+        //setFlowAppState(response.data.appState)
+        dispatch({type:LOAD_APP_STATE, payload:appState})
+
+    }
+    
+
+    useEffect(() => {
+        if(currentFlow){
+            loadAppStateRequest()
+        }
+        
+    }, [])
+
+ 
+
+    return (
+
+        <div>
+             <Card>
+                <Card.Header>   
+                <p className='h4'>App State</p>
+                </Card.Header>
+            </Card>
+            
+
+            <table>
+                <thead>
+                    <tr>
+                        <td className="h5" style={{padding:'10px'}}>Key</td>
+                        <td className="h5" style={{padding:'10px'}}>Value</td>
+                    </tr>
+                </thead>
+                <tbody>
+            {flowAppState && Object.keys(flowAppState).length > 0 && Object.keys(flowAppState).map((key) => (
+               <>
+               <AppStateItem flow_id={currentFlow.id} ckey={key} cvalue={flowAppState[key]}/>
+               </>
+              
+            ))}
+            </tbody>
+            </table>
+            
+          
+        
+        
+        </div>
+
+    )
+}
+
+
+export default NodeStateView

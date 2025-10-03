@@ -95,5 +95,12 @@ output = simple_flow.run(input_data)
 print("Output : ", output)
 print("History : ", simple_flow.steps)
 
-flow_d = simple_flow.to_dict()
-print("Flow Dictionary : ", flow_d)
+#----------------------- Visualization -------------------------------
+
+from laeyerz.ui.LaeyerzAPI import LaeyerzVizAPI
+
+lflow = LaeyerzVizAPI()
+
+lflow.set_flow(simple_flow)
+
+lflow.run(host="0.0.0.0", port=6222)
