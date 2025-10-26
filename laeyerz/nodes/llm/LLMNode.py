@@ -17,6 +17,10 @@ LLMNode module for language model operations
 in the Laeyerz framework.
 """
 
+from laeyerz.flow.Node import Node
+
+class LLM(Node):
+
     def __init__(self, node_name, description=""):
         super().__init__(node_name=node_name, description=description)
         self.metadata = {

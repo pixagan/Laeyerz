@@ -18,6 +18,7 @@ datasets
 testcases
 dummy
 examples
+/examples/Agents
 
 laeyerz-ui/node_modules/
 laeyerz-ui/build/

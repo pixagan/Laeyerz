@@ -16,3 +16,31 @@
 Supabase module for Supabase database integration
 in the Laeyerz framework.
 """
+
+from laeyerz.flow.Node import Node
+import os
+from supabase import create_client, Client
+
+class Supabase(Node):
+    def __init__(self, config={}):
+        self.client = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_KEY'))
+
+
+    def fetch_data(self, table_name):
+        return self.client.table(table_name).select("*").execute()
+
+    def insert_data(self, table_name, data):
+        return self.client.table(table_name).insert(data).execute()
+
+    def update_data(self, table_name, data):
+        return self.client.table(table_name).update(data).eq('id', data['id']).execute()
+        
+    def upsert_data(self, table_name, data):
+        return self.client.table(table_name).upsert(data).execute()
+        
+    def delete_data(self, table_name, data):
+        return self.client.table(table_name).delete().eq('id', data['id']).execute()
+        
+    def all_postgres(self, fun_in):
+        return self.client.rpc(fun_in).execute()
+        

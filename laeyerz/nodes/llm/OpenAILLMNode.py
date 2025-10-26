@@ -20,6 +20,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import json
+from laeyerz.flow.Node import Node
 
 load_dotenv()
 
@@ -27,7 +28,7 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 class OpenAILLMNode(Node):
 
-    def __init__(self, node_name, params={}):
+    def __init__(self, node_name, config={}):
         super().__init__(node_name=node_name, description='OpenAI LLM Node')
         self.metadata = {
             "node_type": "OpenAI",

@@ -72,7 +72,7 @@ class Action:
 
 class Node:
 
-    def __init__(self, node_name, description=""):
+    def __init__(self, node_name, description="", config={}):
         self.id       = str(uuid.uuid4())
         self.metadata = {
             "node_type": "",
@@ -277,6 +277,8 @@ class Node:
         self.current_action = settings["current_action"]
         self.params = settings["params"]
 
+    def clone(self):
+        return copy.deepcopy(self)
 
 
 

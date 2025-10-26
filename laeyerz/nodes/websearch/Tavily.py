@@ -17,10 +17,19 @@ Tavily module for Tavily web search operations
 in the Laeyerz framework.
 """
 
-class Tavily(Node):
-    def __init__(self, node_name, description=""):
+from dotenv import load_dotenv
+import os
+import json
+from tavily import TavilyClient 
+from laeyerz.flow.Node import Node
+
+load_dotenv()
+
+TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
+
+class TavilyNode(Node):
+    def __init__(self, node_name, description="Run websearch with Tavily"):
         super().__init__(node_name=node_name, description=description)
-        self.api_key = api_key
         self.metadata = {
             "node_type": "WebSearch",
             "node_subtype": "Tavily",
@@ -30,17 +39,24 @@ class Tavily(Node):
             "view_subtype": "Tavily",
         }
 
+        self.client = TavilyClient(TAVILY_API_KEY)
+        
+
 
     def search(self, query):
-        pass
+        response = self.client.search(
+            query=query
+        )
+
+        return response
 
 
 
 def main():
 
-    tavily = Tavily("tavily_api_key")
-    tavily.search("Hello, how are you?")
-
+    tavily = TavilyNode("TavilyTest")
+    searchResults = tavily.search("The latest goal tally of Cristiano Ronaldo")
+    print(searchResults)
     
 
 if __name__ == "__main__":

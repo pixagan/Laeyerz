@@ -17,14 +17,19 @@ LocalDB module for local database operations
 in the Laeyerz framework.
 """
 import uuid
+import pandas as pd
+from laeyerz.flow.Node import Node
 
-class LocalDB(Node):
+class Dataframe(Node):
     def __init__(self, dbname="Local Python DB", schema_in={}):
+        super().__init__(dbname)
         self.dbname = dbname
         self.schema = {"id":"uuid"}
         self.nItems = 0
         self.items  = []
         self.map = {}
+
+        self.df = pd.DataFrame(columns=self.schema.keys())
 
         for key, value in schema_in.items():
             self.schema[key] = value
@@ -42,6 +47,7 @@ class LocalDB(Node):
                 return False
         return True
 
+
     def add_item(self, item):
         validated = self.validate_entry(item)
         if validated:
@@ -52,10 +58,13 @@ class LocalDB(Node):
         else:
             raise ValueError("Invalid entry")
 
+
+
     def remove_item(self, item_id):
         self.items.remove(self.map[item_id])
         self.nItems -= 1
         del self.map[item_id]
+
 
     def update_item(self, item_id, name, value):
         self.items[self.map[item_id]][name] = value
@@ -95,54 +104,10 @@ class LocalDB(Node):
     
 
 
-def laeyerzdb_function(inputs):
-    """Sqlite function that processes inputs and returns output"""
-    # Extract inputs - you can customize this based on your needs
-    text = inputs.get('text', '')
-    model = inputs.get('model', 'gpt-3.5-turbo')
-    
-    # Placeholder for OpenAI API call
-    # In a real implementation, you would call the OpenAI API here
-    response = f"Sqlite processed: {text} using {model}"
-    
-    return {"output": response}
-
-
-def create_laeyerzdb_node(node_name):
-    """Factory function to create and return an SqliteNode"""
-    # Create the SqliteNode with proper initialization
-    LaeyerzDBNode = Node(
-        node_type='LaeyerzDB',
-        node_subtype='Local DB',
-        node_name=node_name,
-        description='Node for Sqlite API interactions'
-    )
-
-    # Set the function and configure inputs/outputs
-    LaeyerzDBNode.action = 'LaeyerzDB LLM call'
-    LaeyerzDBNode.set_function(laeyerzdb_function)
-    LaeyerzDBNode.inputs = ['text', 'model']  # Expected input parameters
-    LaeyerzDBNode.outputs = ['output']  # Expected output parameters
-    
-    return LaeyerzDBNode
-
-
-# Create a default instance
-#OpenAINode = create_openai_node()
-
-
 # Return the configured node
 if __name__ == "__main__":
-    # For testing the node
-    from laeyerzflow.flow.AppState import AppState
     
-    app_state = AppState()
-    app_state.update('text', 'Hello from OpenAI!')
-    app_state.update('model', 'gpt-4')
-    
-    # result, next_node = OpenAINode.run(app_state)
-    # print(f"Result: {result}")
-    # print(f"Next node: {next_node}")
+    dfNode = Dataframe("TestDB")
 
 
 

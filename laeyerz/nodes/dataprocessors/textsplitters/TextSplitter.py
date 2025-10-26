@@ -23,21 +23,25 @@ from laeyerz.flow.Node import Node
 
 
 
-class TextSplitter(Node):
+class TextSplitterNode(Node):
 
-    def __init__(self):
+    def __init__(self, node_name, config={}):
+        super().__init__(node_name, config)
+
         print("Splitting the Text for Vectorization")
         self.chunk_size = 200 #no of tokens
         self.token_overlap = 50
         self.separators = ["\n\n", "\n", ". ", " ", ""]
 
+        self.add_action(action_name="process", function=self.process, inputs=["text"], outputs=["chunks"])
 
 
-    def run(self, text):
+
+    def process(self, text):
         print("Split")
 
         sentences = self.into_sentences(text)
-        chunks = self.into_chunks(sentences)
+        chunks    = self.into_chunks(sentences)
 
         return chunks
 
@@ -115,3 +119,10 @@ class TextSplitter(Node):
             chunks.append(" ".join(current_chunk))
             
         return chunks
+
+
+
+if __name__ == "__main__":
+    textSplitter = TextSplitter("TextSplitter")
+    textSplitter.process("Hello, how are you? I am fine. Thank you.")
+    print(textSplitter.chunks)

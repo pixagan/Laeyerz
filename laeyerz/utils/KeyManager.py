@@ -25,12 +25,17 @@ load_dotenv()
 
 class KeyManager:
     
-    def __init__(self):
+    def __init__(self, key_path):
         print("Load API Keys")
+        self.key_path = key_path
+
         self.keys = {}
 
 
     def loadKeys(self):
+        with open(self.key_path, 'r') as file:
+            keys = json.load(file)
+            self.keys = keys
         print("Keys")
 
 

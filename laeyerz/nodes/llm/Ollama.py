@@ -17,6 +17,13 @@ OllamaNode module for Ollama LLM integration
 in the Laeyerz framework.
 """
 
+from laeyerz.flow.Node import Node
+import os
+
+class LLM_Ollama(Node):
+    def __init__(self, node_name, config={}):
+        super().__init__(node_name, config)
+        self.add_action(action_name="call_llm", function=self.call_llm, inputs=["messages", "model"], parameters=["model"], outputs=["outputs"], isDefault=True)
 
 def ollama_function(inputs):
     """OpenAI function that processes inputs and returns output"""

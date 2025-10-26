@@ -23,6 +23,7 @@ from laeyerz.flow.Node import Node
 import os
 from pymongo import MongoClient
 from bson import ObjectId
+from datetime import datetime
 
 filepath = os.getenv('MONGO_URI')
 mongo_db = os.getenv('MONGO_DB')
@@ -31,15 +32,17 @@ mongo_db = os.getenv('MONGO_DB')
 
 class MongoNode(Node):
 
-    def __init__(self):
+    def __init__(self, node_name, config={}):
         self.client = MongoClient(os.getenv('MONGO_URI'))
         self.db     = self.client[os.getenv('MONGO_DB')]
+        print("MongoNode initialized", self.client, self.db, os.getenv('MONGO_URI'), os.getenv('MONGO_DB'))
         #self.collection = self.db[os.getenv('MONGO_COLLECTION')]
 
 
     def create_collection(self, collection_name):
         """Create a new collection in MongoDB"""
-        self.db[collection_name] = self.client[collection_name]
+        newCollection = self.db[collection_name]
+        return newCollection
 
 
     def get_collection(self, collection_name):
@@ -49,6 +52,9 @@ class MongoNode(Node):
 
     def create_document(self, collection_name, data):
         """Create a new document in MongoDB"""
+
+        data["created_at"] = datetime.now()
+        data["updated_at"] = datetime.now()
        
         newItem = self.db[collection_name].insert_one(data)
 
@@ -81,6 +87,11 @@ class MongoNode(Node):
         else:
             document_id = id
         return self.db[collection_name].find_one({"_id": document_id})
+
+
+    def check_document_exists(self, collection_name, query):
+        """Check if a document exists in the collection"""
+        return self.db[collection_name].find_one(query) is not None
 
 
     def load_document(self, collection_name, query):
