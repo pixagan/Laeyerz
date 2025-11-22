@@ -38,7 +38,6 @@ class OpenAIEmbeddings(Node):
         print("Initializing OpenAI adapter")
 
         self.model = model_name
-
         self.client =  OpenAI(api_key=OPENAI_API_KEY)
 
 

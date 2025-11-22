@@ -68,6 +68,21 @@ class Action:
         self.parameters  = parameters
         self.outputs     = outputs
 
+    
+
+
+
+class NodeInput:
+    def __init__(self, name, type, description):
+        self.name = name
+        self.type = type
+        self.description = description
+
+class NodeOutput:
+    def __init__(self, name, type, description):
+        self.name = name
+        self.type = type
+        self.description = description
 
 
 class Node:
@@ -105,6 +120,9 @@ class Node:
         
         self.setup()
 
+        self.inputs = []
+        self.out = None
+
 
     def __str__(self):
         return f"Node(id={self.id}, type={self.nodetype}, name={self.name}, inputs={self.inputs},description={self.description})"
@@ -112,6 +130,25 @@ class Node:
 
     def setup(self):
         print(f"Setting up node {self.name}")
+
+    def unpack_inputs(self):
+        for key, value in self.inputs.items():
+            key_split = key.split(":")
+            section = key_split[0]
+            iid = key_split[1]
+            key_val = app_state.get(section, iid)
+            # print("Key Val : ", key_val)
+            node_inputs[value] = key_val[key]
+
+        return node_inputs
+
+
+    def pack_outputs(self, result):
+        for index, (key, value) in enumerate(self.outputs.items()):
+            value_split = value.split(":")
+            section = value_split[0]
+            iid = value_split[1]
+            app_state.update(section, iid, result[index])
 
 
     def add_action(self, action_name, function, inputs, parameters, outputs, isDefault=False):

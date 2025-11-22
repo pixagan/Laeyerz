@@ -33,3 +33,13 @@ class SentenceTransformerAdapter(Node):
         embeddings_list = self.model.encode(sentences)
 
         return embeddings_list
+
+
+def main():
+    print("Starting Sentence Transformer Adapter")
+    sentence_transformer_adapter = SentenceTransformerAdapter()
+    sentence_transformer_adapter.encode(["Hello, how are you?"])
+    print("Sentence Transformer Adapter started")
+
+if __name__ == "__main__":
+    main()
