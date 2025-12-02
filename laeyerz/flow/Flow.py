@@ -20,7 +20,7 @@ import uuid
 import json
 
 from laeyerz.flow.Node import Node  
-from laeyerz.flow.AppState import AppState
+from laeyerz.flow.AppState import AppState, GraphState
 from laeyerz.flow.Edge import Edge
 from laeyerz.flow.Evals import Evals
 from laeyerz.flow.Observe import Observe
@@ -29,38 +29,36 @@ class Flow:
 
     def __init__(self,name=""):
 
-        self.id             = ""
+        self.id             = str(uuid.uuid4())
         self.name           = name
         self.description    = ""
         
-        self.nodes          = []
+        self.nodes          = {}
         self.node_map       = {}
         self.node_id_map    = {}
+        self.nodelist       = []
 
-        self.edges          = []
+        self.edges          = {}
         self.edge_map       = {}
+        self.edgelist       = []
         
+        self.graph_state    = GraphState()
         self.state          = AppState()
-        self.observe        = Observe()
 
         self.components     = {}
         self.components_map = {}
-        self.flowtype = "workflow"  # agent
+        self.flowtype       = "workflow"
 
         self.start = None
         self.end   = None
 
         self.max_steps = 50
 
-        self.output = "final_output"
+        self.output = ""
 
         self.steps = []
 
-
-    def create(self, flow_name):
-
-        self.name = flow_name
-        self.id   = str(uuid.uuid4())
+        self.inputs = {}
 
 
     def get_node(self, node_id):
@@ -101,126 +99,144 @@ class Flow:
 
     def add_node(self, node):
 
-        self.nodes.append(node)
-        self.node_map[node.name]  = self.nodes.index(node)
-        self.node_id_map[node.id] = self.nodes.index(node)
+        for key, cAction in node.actions.items():
+            for iI,cinput in enumerate(cAction.inputs):
+                if(cinput['source'] and cinput['source'] != "" and cinput['source'] != None):
+                    source_split = cinput['source'].split("|")
+                    node_name = source_split[0]
+                    if(node_name == "INPUTS"):
+                        source = {
+                            "node":"INPUTS",
+                            "socket":source_split[1]
+                        }
+                    elif(node_name == "GLOBAL"):
+                        source = {
+                            "node":"GLOBAL",
+                            "action":"GLOBAL",
+                            "socket":source_split[1]
+                        }
+                    else:
+                        source = {
+                            "node":source_split[0],
+                            "action":source_split[1],
+                            "socket":source_split[2]
+                        }
+                    node.actions[key].inputs[iI]['source'] = source
 
-        self.state.add_section(node.name)
-
-
-        # component = component_mapping(node.component_name)
-        # if(component.name not in self.components.keys()):
-        #     self.components[component.name] = component
         
-        # self.appflow.add_node("Embedding_Model", embedding_function)
+        self.nodes[node.name] = node
+        self.nodelist.append(node.name)
+
+        for key, value in node.actions.items():
+            self.graph_state.add_section(node.name+"|"+key)
 
 
-    def run_node(self, node_id, inputs):
+       
+
+    def run_node(self, node_name, inputs):
         
-        outputs, next_node = self.nodes[self.node_id_map[node_id]].run(inputs)
+        outputs, next_node = self.nodes[node_name].run(inputs)
 
         return outputs
 
 
-    def delete_node(self, node_id):
+    def delete_node(self, node_name):
 
-        if(node_id == self.start):
+        if(node_name == "START"):
             self.start = None
             return True
 
-        if(node_id == self.end):
+        if(node_name == "END"):
             self.end = None
             return True
 
-        index = 0
-        for node in self.nodes: 
-            print("Match node : ", node.id, node_id)
-            if(str(node.id) == str(node_id)):
-                print("Removing node : ", node.id, node.name)
-                self.nodes.remove(node)
-                self.state.delete_node(node_id)
-                print("Removed node : ", node.id, node.name)
-                return True
-            index += 1
+
+        if(node_name != 'START' and node_name != 'END' and node_name in self.nodelist):
+            del self.nodes[node_name]
+            self.graphstate.remove_section(node_name)
+            self.nodelist.remove(node_name)
+            return True
 
         return False
 
 
-    def set_action(self, component, action):
 
-        action_function = self.components[component].get_action(action)
 
-        #check if component has the action
-        self.appflow.set_action()
+    def get_node_state(self, node_name):
+        return self.graphstate.get_section(node_name)
 
 
 
-    def update_node_title(self, node_id, title):
-        self.nodes[self.node_id_map[node_id]].name = title
+    def add_edge(self, source, destination, isConditional=False, condition=None):
 
-        return self.nodes[self.node_id_map[node_id]].to_dict()
+        #check if source == "START, destination = "END"
+        if(source == "START" and destination == "END"):
+            self.start = None
+            self.end   = None
 
-
-
-    def get_node_state(self, node_id):
-        return self.nodes[self.node_id_map[node_id]].state
-
-
-    def finalize(self):
-        print("Finalizing Flow : ")
+            return True
 
 
-    def add_edge(self, node1, node2):
-
-        #check node exists
-        node1_name = ""
-        node2_name = ""
-       
-
-        if(node1 == 'START'):
-            self.start = node2
-            #self.start_node.targets.append(node_1)
-
-            self.nodes[self.node_map[node2]].sources.append('START')
-            node1_name = node1
-            cNode2 = self.nodes[self.node_map[node2]]
-            node2_name = cNode2.name
-
-            #self.nodes[self.node_map[node2]].inputs.append("inputs")
+        if(source == "START" and destination != "END"):
+            destination_split  = destination.split("|")
+            destination_node   = destination_split[0]
+            destination_action = destination_split[1]
+            
 
 
+            newEdge = Edge("START", "START", destination_node, destination_action, "START"+"-"+destination_action, False, None)
+            self.edges[newEdge.id] = newEdge
+            self.edgelist.append(newEdge.id)
+            self.nodes[destination_node].sources.append(newEdge.id)
+
+            self.start      = destination_node
+            self.start_edge = newEdge.id
+            #self.nodes[destination_node].sources.append("START")
+            
+            
+            return True
+            
+            
+            
+
+        if(source != "START" and destination == "END"):
+            source_split = source.split("|")
+            source_node = source_split[0]
+            source_action = source_split[1]
+
+            newEdge = Edge(source_node, source_action, "END", "END", source_action + "-" + "END", False, None)
+            self.edges[newEdge.id] = newEdge
+            self.edgelist.append(newEdge.id)
+
+            self.nodes[source_node].targets.append(newEdge.id)
+            self.end = source_node
+            self.end_edge = newEdge.id
+            #self.nodes[source_node].targets.append("END")
+
+            return True
 
 
+        if(source != "START" and destination != "END"):
+            source_split = source.split("|")
+            source_node = source_split[0]
+            source_action = source_split[1]
 
-        if(node2 == 'END'):
-            self.end = node1
-            #self.end_node.sources.append(node_0)
-            #self.end_node.targets.append('END_NODE')
+            destination_split = destination.split("|")
+            destination_node = destination_split[0]
+            destination_action = destination_split[1]
 
-            self.nodes[self.node_map[node1]].targets.append('END')
+            newEdge = Edge(source_node, source_action, destination_node, destination_action, source_action + "-" + destination_action, False, None)
+            self.edges[newEdge.id] = newEdge
+            self.edgelist.append(newEdge.id)
 
-            cNode1 = self.nodes[self.node_map[node1]]
-            node1_name = cNode1.name
-            node2_name = node2
+            self.nodes[source_node].targets.append(newEdge.id)
+            self.nodes[destination_node].sources.append(newEdge.id)
+            
+            
+            return True
 
-
-
-        if(node1 != 'START' and node2 != 'END' and node1 != node2):
-            self.nodes[self.node_map[node1]].targets.append(node2)
-            self.nodes[self.node_map[node2]].sources.append(node1)
         
-            cNode1 = self.nodes[self.node_map[node1]]
-            node1_name = cNode1.name
-            cNode2 = self.nodes[self.node_map[node2]]
-            node2_name = cNode2.name
 
-        newEdge = Edge(node1, node2, node1_name+"-"+node2_name)
-
-        self.edges.append(newEdge)   
-
-        return newEdge.to_dict()
-
-       
     def delete_edge(self, edge_id):
 
         for edge in self.edges:
@@ -253,77 +269,103 @@ class Flow:
                     return True
 
 
-
-                
-
         return False
         
 
-    def set_node_action(self, node_id, action_name):
-        self.nodes[self.node_id_map[node_id]].set_action(action_name)
-        return action_name
+
+    def add_data_source(self, data_socket_name, data_source_type):
+
+        data_socket_split = data_socket_name.split("|")
+        sink_node        = data_socket_split[0]
+        sink_action_name = data_socket_split[1]
+        sink_input_name  = data_socket_split[2]
+
+        source_split = data_source_type.split("|")
+        node_name = source_split[0]
+        if(node_name == "INPUTS"):
+                source = {
+                    "node":"INPUTS",
+                    "action":"INPUTS",
+                    "socket":source_split[1]
+                }
+        elif(node_name == "GLOBAL"):
+            source = {
+                "node":"GLOBAL",
+                "action":"GLOBAL",
+                "socket":source_split[1]
+            }
+        else:
+            source = {
+                "node":source_split[0],
+                "action":source_split[1],
+                "socket":source_split[2]
+            }
+
+        self.nodes[sink_node].actions[sink_action_name].sources.append(source)
+
+        return True
 
 
-    def visualize(self):
-        self.appflow.visualize()
+    def finalize(self):
+        print("Finalizing Flow : ")
+
 
 
     def run(self, input_data):
 
-        self.steps = []
+        print("Input Data : ", input_data)
 
+        self.inputs = input_data
         for key, value in input_data.items():
-            self.state.update('Inputs',key, value)
+            self.graph_state.update_state('INPUTS', key, value)
+        print("Graph State : ", self.graph_state.state)
+         
 
-        curr_node = self.nodes[self.node_map[self.start]]
-
+        #get first edge from START
+        curr_edge = self.edges[self.start_edge]
+        
         nSteps = 0
 
         print("------------------------------------------------")
         print("-------------- Starting Flow : ", self.name)
         print("------------------------------------------------")
 
+        while curr_edge is not None:
 
-        
-        while curr_node is not None:
+            next_node, next_action = curr_edge.next_node()
 
-            print("Evaluating Node : ", curr_node.id)
-            
-            outputs, next_node   = curr_node.run(self.state)
-
-            print("Node : ",curr_node.name, outputs, next_node)
-
-            print("State : ", self.state)
-
-            self.steps.append({
-                "type": "node",
-                "node_id": curr_node.id,
-                "node_name": curr_node.name,
-                "node_output": outputs,
-                "text":""
-            })
-
-            print(" ------------------------------------------------ ")
-
-            nSteps += 1
-
-            if nSteps > self.max_steps:
+            if(next_action == "END"):
                 break
 
-            if(next_node != 'END'):
-                curr_node = self.nodes[self.node_map[next_node]]
-            else:
-                break
+            curr_node = self.nodes[next_node]
+
+            inputd = {}
+
+            for it, cinput in enumerate(curr_node.actions[next_action].inputs):
+
+                if(cinput['source']['node'] == "INPUTS"):
+                    inputd[cinput['name']] = self.graph_state.get_values('INPUTS', cinput['source']['socket'])
+                
+                elif(cinput['source']['node'] == "GLOBAL"):
+                    inputd[cinput['name']] = self.graph_state.get_values("GLOBAL", cinput['source']['socket'])
+                else:
+                    inputd[cinput['name']] = self.graph_state.get_values(cinput['source']['node']+"|"+cinput['source']['action'], cinput['source']['socket'])
+
+               
+            #run the action
+            outputs = curr_node.actions[next_action].function(**inputd)
+
+            #pack the graph state with the outputs
+            print("Outputs : ", outputs)
+            for key, value in outputs.items():
+                self.graph_state.update_state(next_node+"|"+next_action, key, value)
 
 
-        flow_output = self.state.get_section('Outputs')
 
-        #print("Flow Output : ", self.output, flow_output)
-
-        #flow_output = self.end_node.evaluate(self.appState)
-
-        return flow_output
-
+            #get next edge
+            next_edge = curr_node.targets[0]
+            curr_edge = self.edges[next_edge]
+           
 
 
     def to_dict(self):
@@ -444,10 +486,32 @@ class Flow:
             }
 
 
-    def export_flow(self):
 
-        return self.to_dict()
+    def export_flow(self, filename):
+        with open(filename, 'w') as file:
+            json.dump(self.to_dict(), file)
+        return True
 
+
+    def set_node_action(self, node_id, action_name):
+        self.nodes[self.node_id_map[node_id]].set_action(action_name)
+        return action_name
+
+
+   
+
+    def set_action(self, component, action):
+
+        action_function = self.components[component].get_action(action)
+
+        self.appflow.set_action()
+
+
+
+    def update_node_title(self, node_id, title):
+        self.nodes[self.node_id_map[node_id]].name = title
+
+        return self.nodes[self.node_id_map[node_id]].to_dict()
 
 
 
@@ -459,6 +523,125 @@ class Flow:
     def validate_flow(self):
         for node in self.nodes:
             node.validate()
+
+
+
+
+    def add_edgeV0(self, node1, node2):
+
+        #check node exists
+        node1_name = ""
+        node2_name = ""
+       
+
+        if(node1 == 'START'):
+            self.start = node2
+            #self.start_node.targets.append(node_1)
+
+            self.nodes[self.node_map[node2]].sources.append('START')
+            node1_name = node1
+            cNode2 = self.nodes[self.node_map[node2]]
+            node2_name = cNode2.name
+
+            #self.nodes[self.node_map[node2]].inputs.append("inputs")
+
+
+
+
+
+        if(node2 == 'END'):
+            self.end = node1
+            #self.end_node.sources.append(node_0)
+            #self.end_node.targets.append('END_NODE')
+
+            self.nodes[self.node_map[node1]].targets.append('END')
+
+            cNode1 = self.nodes[self.node_map[node1]]
+            node1_name = cNode1.name
+            node2_name = node2
+
+
+
+        if(node1 != 'START' and node2 != 'END' and node1 != node2):
+
+            node1_split      = node1.split("|")
+            node2_split      = node2.split("|")
+        
+
+            self.nodes[self.node_map[node1]].targets.append(node2)
+            self.nodes[self.node_map[node2]].sources.append(node1)
+        
+            cNode1 = self.nodes[self.node_map[node1]]
+            node1_name = cNode1.name
+            cNode2 = self.nodes[self.node_map[node2]]
+            node2_name = cNode2.name
+
+        newEdge = Edge(node1, node2, node1_name+"-"+node2_name)
+
+        self.edges.append(newEdge)   
+
+        return newEdge.to_dict()
+
+       
+
+    def run_V0(self, input_data):
+
+        self.steps = []
+
+        for key, value in input_data.items():
+            self.state.update('Inputs',key, value)
+
+        curr_node = self.nodes[self.node_map[self.start]]
+
+        nSteps = 0
+
+        print("------------------------------------------------")
+        print("-------------- Starting Flow : ", self.name)
+        print("------------------------------------------------")
+
+        #push inputs from start to first node
+
+
+        
+        while curr_node is not None:
+
+            print("Evaluating Node : ", curr_node.id)
+
+            #preload the inputs
+            outputs, next_node   = curr_node.run(self.state)
+
+            print("Node : ",curr_node.name, outputs, next_node)
+
+            print("State : ", self.state)
+
+            self.steps.append({
+                "type": "node",
+                "node_id": curr_node.id,
+                "node_name": curr_node.name,
+                "node_output": outputs,
+                "text":""
+            })
+
+            print(" ------------------------------------------------ ")
+
+            #push outputs to next node
+
+            nSteps += 1
+
+            if nSteps > self.max_steps:
+                break
+
+            if(next_node != 'END'):
+                curr_node = self.nodes[self.node_map[next_node]]
+            else:
+                break
+
+
+        flow_output = self.state.get_section('Outputs')
+
+
+        return flow_output
+
 
 
     def view(self):

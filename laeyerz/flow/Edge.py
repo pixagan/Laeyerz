@@ -20,11 +20,31 @@ in the Laeyerz framework.
 
 import uuid
 
+class EdgeCondition:
+
+    def __init__(self, condition, action):
+        self.condition = condition
+        self.action    = action
+
+
+
+
 class Edge:
-    def __init__(self, source, target, label, condition=None):
+    #def __init__(self, source, target, label, condition=None):
+    def __init__(self, source_node, source_action, target_node, target_action,  label, isConditional=False, condition=None):
+        print("Creating Edge : ", source_node, source_action, target_node, target_action, label, isConditional, condition)
+        
         self.id = uuid.uuid4()
-        self.source = source
-        self.target = target
+       # self.source = source
+        self.source_node = source_node
+        self.source_action = source_action
+        
+        #self.target = target
+        self.target_node = target_node
+        self.target_action = target_action
+
+        self.isConditional = isConditional
+        self.condition     = None
         self.label = label
 
         if condition is None:
@@ -36,10 +56,11 @@ class Edge:
         return f"Edge(id={self.id}, source={self.source}, target={self.target}, label={self.label})"
 
 
-    def evaluate(self, inputs, app_state):
-        condition = self.condition(inputs)
+    def next_node(self):
 
-        return condition
+        #for now not conditional
+
+        return self.target_node, self.target_action
 
     def to_dict(self):
         return {

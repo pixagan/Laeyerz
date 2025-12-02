@@ -13,6 +13,32 @@
 # limitations under the License.
 
 
+class GraphState:
+    def __init__(self):
+
+        self.state = {
+            "GLOBAL":{},
+            "INPUTS":{},
+            "OUTPUTS":{},
+        }
+        
+
+    def add_section(self, node_name):
+        self.state[node_name] = {}
+
+
+    def remove_section(self, node_name):
+        del self.state[node_name]
+
+
+    def update_state(self, node_name, key, value):
+        self.state[node_name][key] = value
+
+
+    def get_values(self, section, key):
+        return self.state[section][key]
+
+
 
 class AppState:
 

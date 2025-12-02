@@ -75,6 +75,7 @@ class MongoNode(Node):
         return self.db[collection_name].find()
 
 
+
     def load_documents(self, collection_name, query):
         """Read documents matching the query"""
         return self.db[collection_name].find(query).to_list(length=None)

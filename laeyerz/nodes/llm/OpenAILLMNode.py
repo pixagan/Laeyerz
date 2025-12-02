@@ -39,7 +39,7 @@ class OpenAILLMNode(Node):
             "view_subtype": "LLM",
         }
         self.client = OpenAI(api_key=OPENAI_API_KEY)
-        self.add_action(action_name="call_llm", function=self.call_llm, inputs=["messages", "model"], parameters=["model"], outputs=["outputs"], isDefault=True)
+        self.add_action(action_name="call_llm", function=self.call_llm, inputs=["messages", "model"], parameters=["model"], outputs=["outputs"], isDefault=True, description="Call the OpenAI LLM")
 
     
 
@@ -52,14 +52,14 @@ class OpenAILLMNode(Node):
         tools    = inputs.get('tools')
         output_format = inputs.get('output_format')
 
-        print("Messages : ", messages)
-        print("Model : ", model)
-        print("Tools : ", tools)
+        #print("Messages : ", messages)
+        #print("Model : ", model)
+        #print("Tools : ", tools)
 
         response = self.client.chat.completions.create(
                 model=model,
                 messages = messages,
-                tools = [],
+                tools = tools,
                 tool_choice = "auto"
         )
 
@@ -85,9 +85,13 @@ class OpenAILLMNode(Node):
             "created": response.created,
             "finish_reason": response.choices[0].finish_reason,
             #"usage": response.usage,
-            "tokens_used": response.usage.total_tokens,
-            "tokens_prompt": response.usage.prompt_tokens,
-            "tokens_completion": response.usage.completion_tokens,
+            "tokens":{
+                "model": response.model,
+                "total_tokens": response.usage.total_tokens,
+                "prompt_tokens": response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens,
+                "service_tier": response.service_tier,
+            },
             "service_tier": response.service_tier,
             "tool_calls": [],
         }
@@ -98,12 +102,18 @@ class OpenAILLMNode(Node):
         tool_call_extracted = []
 
         if tool_calls:
+            #print("Tool calls : ", tool_calls)
             for tc in tool_calls:
-                function_name = tc.name
-                arguments = json.loads(tc.function.arguments)
+                tc_id   = tc.id
+                tc_type = tc.type
+                tc_function = {
+                    'arguments': json.loads(tc.function.arguments),
+                    'name': tc.function.name,
+                }
                 tool_call_extracted.append({
-                    "function_name": function_name,
-                    "arguments": arguments
+                    "id": tc_id,
+                    "type": tc_type,
+                    "function": tc_function,
                 })
 
         parsed_response["tool_calls"] = tool_call_extracted

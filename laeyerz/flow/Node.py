@@ -61,12 +61,29 @@ def default_function():
 
 class Action:
 
-    def __init__(self, action_name, function, inputs, parameters, outputs):
+    def __init__(self, action_name, function, parameters={}, inputs=[], outputs=[], description=""):
         self.action_name = action_name
         self.function    = function
         self.inputs      = inputs
         self.parameters  = parameters
         self.outputs     = outputs
+        self.description = description
+
+
+    def run(self, inputs):
+        return self.function(**inputs)
+
+
+    def get_tools(self):
+
+        tool_dict = {
+            "name": self.action_name,
+            "description": self.description,
+            "description": self.function.description,
+            "inputs": self.inputs,
+            "outputs": self.outputs,
+        }
+        return self.function.get_tools()
 
     
 
@@ -77,6 +94,13 @@ class NodeInput:
         self.name = name
         self.type = type
         self.description = description
+        self.sourceType = ""
+        self.options = []
+        self.required = True
+        self.default  = None
+        self.value    = ""
+
+
 
 class NodeOutput:
     def __init__(self, name, type, description):
@@ -109,12 +133,12 @@ class Node:
         self.function  = default_function
         self.sources = []
         self.targets = []
+        self.current_action = None
         
 
-
-        self.actions = []
+        self.actions = {}
         self.action_map = {}
-        self.current_action = None
+        
 
         self.config = {} #NodeConfig()
         
@@ -151,26 +175,25 @@ class Node:
             app_state.update(section, iid, result[index])
 
 
-    def add_action(self, action_name, function, inputs, parameters, outputs, isDefault=False):
+    def add_action(self, action_name, function, parameters={}, inputs=[], outputs=[], isDefault=False, description=""):
 
-        newAction = Action(action_name=action_name, 
-        function=function, 
-        inputs=inputs,
-        parameters=parameters, 
-        outputs=outputs
-        )
+        if action_name not in self.actions:
 
+            newAction = Action(action_name=action_name, function=function, inputs=inputs,parameters=parameters, outputs=outputs, description=description)
+            self.actions[action_name] = newAction
 
-        self.actions.append(action_name)
+            if isDefault:
+                self.current_action = newAction
+                self.function       = newAction.function
+                self.inputs         = newAction.inputs
+                self.parameters     = newAction.parameters
+                self.outputs        = newAction.outputs
 
-        self.action_map[action_name] = newAction
+            print("Adding Action : ", action_name)
+                
 
-        if isDefault:
-            self.current_action = newAction
-            self.function       = newAction.function
-            self.inputs         = newAction.inputs
-            self.parameters     = newAction.parameters
-            self.outputs        = newAction.outputs
+        else:
+            print(f"Action {action_name} already exists. Use a different action name.")
 
 
     def set_action(self, action_name:str):
@@ -178,14 +201,22 @@ class Node:
         print("Action Name : ", action_name)
         print("Action Map : ", self.action_map)
         selected_action = self.action_map.get(action_name)
+
+        #selected_action     
         self.function       = selected_action.function
         self.inputs         = selected_action.inputs
         self.parameters     = selected_action.parameters
         self.outputs        = selected_action.outputs
 
 
-    def set_function(self, function_in):
+
+    def get_actions(self):
+        return self.actions
+
+    def set_function(self, function_name, function_in, parameters={}, inputs=[], outputs=[], isDefault=True, description=""):
         self.function = function_in
+        self.add_action(function_name, function_in, parameters, inputs, outputs, isDefault, description)
+
 
     def set_node(self, node_in):
         self.id = node_in["id"]
@@ -208,41 +239,43 @@ class Node:
 
  
 
-    def run(self, app_state):
+    def run(self, node_inputs):
 
         #unpack inputs
-        node_inputs = {}
+        #node_inputs = {}
 
         print("Inputs : ", self.inputs)
+        print("Current Action : ", self.current_action)
 
 
         print(f"Node inputs: {node_inputs}")
 
-        for key, value in self.inputs.items():
-            key_split = key.split(":")
-            section = key_split[0]
-            iid = key_split[1]
-            key_val = app_state.get(section, iid)
-            # print("Key Val : ", key_val)
-            node_inputs[value] = key_val[key]
+        # for key, value in self.inputs.items():
+        #     key_split = key.split(":")
+        #     section = key_split[0]
+        #     iid = key_split[1]
+        #     key_val = app_state.get(section, iid)
+        #     node_inputs[value] = key_val[key]
+
+        #validate inputs
 
         result = self.function(**node_inputs)
 
         print("Result : ", result)
 
-        
-
 
         #if isinstance(result, tuple):
-        for index, (key, value) in enumerate(self.outputs.items()):
-            value_split = value.split(":")
-            section = value_split[0]
-            iid = value_split[1]
-            app_state.update(section, iid, result[index])
+        # for index, (key, value) in enumerate(self.outputs.items()):
+        #     value_split = value.split(":")
+        #     section = value_split[0]
+        #     iid = value_split[1]
+        #     app_state.update(section, iid, result[index])
 
-        next_node = self.next_node(result, app_state)
+        # next_node = self.next_node(result, app_state)
 
-        return result, next_node
+        next_node = {}
+
+        return result
 
 
 
@@ -314,9 +347,7 @@ class Node:
         self.current_action = settings["current_action"]
         self.params = settings["params"]
 
-    def clone(self):
-        return copy.deepcopy(self)
-
+  
 
 
 def main():

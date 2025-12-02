@@ -14,6 +14,7 @@ laeyerz.egg-info/
 /laeyerz/memory/vectordbs/__pycache__/
 /laeyerz/memory/sqldb/__pycache__/
 /laeyerz/flow/__pycache__
+/laeyerz/nodes/__pycache__
 datasets
 testcases
 dummy
