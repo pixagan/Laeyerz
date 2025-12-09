@@ -239,7 +239,7 @@ class Node:
 
  
 
-    def run(self, node_inputs):
+    def run(self, action_name, node_inputs):
 
         #unpack inputs
         #node_inputs = {}
@@ -259,7 +259,9 @@ class Node:
 
         #validate inputs
 
-        result = self.function(**node_inputs)
+        #result = self.function(**node_inputs)
+
+        result = self.actions[action_name].function(**node_inputs)
 
         print("Result : ", result)
 

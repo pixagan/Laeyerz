@@ -107,6 +107,7 @@ class Flow:
                     if(node_name == "INPUTS"):
                         source = {
                             "node":"INPUTS",
+                            "action":"INPUTS",
                             "socket":source_split[1]
                         }
                     elif(node_name == "GLOBAL"):
@@ -122,7 +123,7 @@ class Flow:
                             "socket":source_split[2]
                         }
                     node.actions[key].inputs[iI]['source'] = source
-
+                    node.actions[key].inputs[iI]['inputType'] = "source"
         
         self.nodes[node.name] = node
         self.nodelist.append(node.name)
@@ -131,7 +132,66 @@ class Flow:
             self.graph_state.add_section(node.name+"|"+key)
 
 
+
+
+    def add_data_source(self, data_socket_name, data_source_type):
+
+        #get selected node
+        data_socket_split = data_socket_name.split("|")
+        socket_node        = data_socket_split[0]
+        socket_action_name = data_socket_split[1]
+        socket_input_name  = data_socket_split[2]
+        
+        #get the sources
+        source_split = data_source_type.split("|")
+        node_name = source_split[0]
+        source = {}
+        if(node_name == "INPUTS"):
+                source = {
+                    "node":"INPUTS",
+                    "action":"INPUTS",
+                    "socket":source_split[1]
+                }
+        elif(node_name == "GLOBAL"):
+            source = {
+                "node":"GLOBAL",
+                "action":"GLOBAL",
+                "socket":source_split[1]
+            }
+        else:
+            source = {
+                "node":source_split[0],
+                "action":source_split[1],
+                "socket":source_split[2]
+            }
+
+        for cinput in self.nodes[socket_node].actions[socket_action_name].inputs:
+            if(cinput['name'] == socket_input_name):
+                cinput['source'] = source
+                cinput['inputType'] = "source"
+                break
+        #self.nodes[socket_node].actions[socket_action_name].inputs[socket_input_name]['source'] = source
+
+        return True
+
        
+
+
+    def set_node_input(self,data_socket_name, value ):
+        data_socket_split = data_socket_name.split("|")
+        socket_node        = data_socket_split[0]
+        socket_action_name = data_socket_split[1]
+        socket_input_name  = data_socket_split[2]
+
+        for cinput in self.nodes[socket_node].actions[socket_action_name].inputs:
+            if(cinput['name'] == socket_input_name):
+                cinput['value'] = value
+                cinput['inputType'] = "value"
+                break
+
+        return True
+
+
 
     def run_node(self, node_name, inputs):
         
@@ -273,39 +333,6 @@ class Flow:
         
 
 
-    def add_data_source(self, data_socket_name, data_source_type):
-
-        data_socket_split = data_socket_name.split("|")
-        sink_node        = data_socket_split[0]
-        sink_action_name = data_socket_split[1]
-        sink_input_name  = data_socket_split[2]
-
-        source_split = data_source_type.split("|")
-        node_name = source_split[0]
-        if(node_name == "INPUTS"):
-                source = {
-                    "node":"INPUTS",
-                    "action":"INPUTS",
-                    "socket":source_split[1]
-                }
-        elif(node_name == "GLOBAL"):
-            source = {
-                "node":"GLOBAL",
-                "action":"GLOBAL",
-                "socket":source_split[1]
-            }
-        else:
-            source = {
-                "node":source_split[0],
-                "action":source_split[1],
-                "socket":source_split[2]
-            }
-
-        self.nodes[sink_node].actions[sink_action_name].sources.append(source)
-
-        return True
-
-
     def finalize(self):
         print("Finalizing Flow : ")
 
@@ -337,21 +364,32 @@ class Flow:
             if(next_action == "END"):
                 break
 
+            print("------------------------------------------------")
+            print("Running Node : ", next_node, next_action)
+            print("------------------------------------------------")
+            
             curr_node = self.nodes[next_node]
 
             inputd = {}
 
             for it, cinput in enumerate(curr_node.actions[next_action].inputs):
 
-                if(cinput['source']['node'] == "INPUTS"):
-                    inputd[cinput['name']] = self.graph_state.get_values('INPUTS', cinput['source']['socket'])
-                
-                elif(cinput['source']['node'] == "GLOBAL"):
-                    inputd[cinput['name']] = self.graph_state.get_values("GLOBAL", cinput['source']['socket'])
-                else:
-                    inputd[cinput['name']] = self.graph_state.get_values(cinput['source']['node']+"|"+cinput['source']['action'], cinput['source']['socket'])
+                print("Cinput : ", cinput)
 
-               
+                if(cinput['inputType'] == "source"):
+
+                    if(cinput['source']['node'] == "INPUTS"):
+                        inputd[cinput['name']] = self.graph_state.get_values('INPUTS', cinput['source']['socket'])
+                    
+                    elif(cinput['source']['node'] == "GLOBAL"):
+                        inputd[cinput['name']] = self.graph_state.get_values("GLOBAL", cinput['source']['socket'])
+                    else:
+                        inputd[cinput['name']] = self.graph_state.get_values(cinput['source']['node']+"|"+cinput['source']['action'], cinput['source']['socket'])
+
+
+                elif(cinput['inputType'] == "value"):
+                    inputd[cinput['name']] = cinput['value']
+                
             #run the action
             outputs = curr_node.actions[next_action].function(**inputd)
 

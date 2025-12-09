@@ -28,7 +28,7 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 class OpenAILLMNode(Node):
 
-    def __init__(self, node_name, config={}):
+    def __init__(self, node_name, config={}, instructions=None):
         super().__init__(node_name=node_name, description='OpenAI LLM Node')
         self.metadata = {
             "node_type": "OpenAI",
@@ -39,22 +39,80 @@ class OpenAILLMNode(Node):
             "view_subtype": "LLM",
         }
         self.client = OpenAI(api_key=OPENAI_API_KEY)
-        self.add_action(action_name="call_llm", function=self.call_llm, inputs=["messages", "model"], parameters=["model"], outputs=["outputs"], isDefault=True, description="Call the OpenAI LLM")
-
+        
+        #adding llm actions
+        node_inputs = [
+            {
+                "name":"messages",
+                "type":"list",
+                "description":"The input messages to the model",
+                "inputType":"input",
+                "source":"",
+                "value":None
+            },
+            {
+                "name":"model",
+                "type":"str",
+                "description":"Input to the model",
+                "inputType":"input",
+                "source":"",
+                "value":None
+            },
+            {
+                "name":"tools",
+                "type":"list",
+                "description":"Input to the model",
+                "inputType":"input",
+                "source":"",
+                "value":None
+            }
+        ]
+        node_outputs = [
+            {
+                "name":"content",
+                "type":"string",
+                "description":"Output from the llm model"
+            },
+            {
+                "name":"tokens",
+                "type":"object",
+                "description":"Tokens Output"
+            },
+            {
+                "name":"finish_reason",
+                "type":"string",
+                "description":"Finish reason for the llm model"
+            },
+            {
+                "name":"tool_calls",    
+                "type":"list",
+                "description":"Tool calls for the llm model"
+            }
+        ]
+        self.add_action(action_name="call_llm", function=self.call_llm, parameters=["model"], inputs=node_inputs, outputs=node_outputs, isDefault=True, description="Call the OpenAI LLM")
+        
+        
+        self.config = config
+        self.instructions = instructions
     
 
     def setup(self):
         print(f"Setting up node {self.name}")
 
-    def call_llm(self, inputs):
-        messages = inputs.get('messages')
-        model    = inputs.get('model')
-        tools    = inputs.get('tools')
-        output_format = inputs.get('output_format')
+    #def call_llm(self, inputs):
+    def call_llm(self, messages, model, tools):
+
+        #messages = inputs.get('messages')
+        #model    = inputs.get('model')
+        #tools    = inputs.get('tools')
+        #output_format = inputs.get('output_format')
 
         #print("Messages : ", messages)
         #print("Model : ", model)
         #print("Tools : ", tools)
+
+        if(self.instructions):
+            messages.insert(0, {"role":"developer", "content":self.instructions})
 
         response = self.client.chat.completions.create(
                 model=model,
