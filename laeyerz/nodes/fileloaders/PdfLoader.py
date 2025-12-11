@@ -23,11 +23,36 @@ from laeyerz.flow.Node import Node
 class PdfLoader(Node):
 
     def __init__(self, node_name, config={}):
-        super().__init__(node_name, config)
+        super().__init__(node_name, description="Pdf Loader Node")
         print("Loading Doc")
 
 
-    def load_pdf(self, filename):
+        node_inputs = [
+            {
+                "name":"filename",
+                "type":"string",
+                "description":"The filename of the PDF file to load",
+                "inputType":"input",
+                "source":"",
+                "value":None
+            }
+        ]
+
+        node_outputs = [
+            {
+                "name":"doc_pages",
+                "type":"list",
+                "description":"The pages of the PDF file",
+                "outputType":"output",
+                "source":"",
+                "value":None
+            }
+        ]
+
+        self.add_action(action_name="load_pdf", function=self.load_pdf, parameters=[], inputs=[], outputs=[], isDefault=True, description="Load a PDF file")
+
+
+    def load_pdf(self, filename:str)->(list):
         print("Loading Doc")
 
         doc = fitz.open(filename)
@@ -63,6 +88,8 @@ class PdfLoader(Node):
                 "page": page_num,
                 "content": "\n".join(page_text)
             })
+
+        return doc_pages
 
 
 
