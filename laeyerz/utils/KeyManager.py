@@ -18,6 +18,7 @@ in the Laeyerz framework.
 """
 
 import os
+import inspect
 from pathlib import Path
 import json
 from dotenv import load_dotenv
@@ -28,24 +29,51 @@ load_dotenv()
 
 class KeyManager:
     
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         print("Load API Keys")
         self.key_path = filename
         self.keys = {}
 
-        keys_path = Path(filename).expanduser().resolve()
-        if not keys_path.exists():
-            raise FileNotFoundError(f"Key file not found: {keys_path}")
+        if filename is None:
 
-        if keys_path.suffix == ".env":
-            keys = dotenv_values(keys_path)
-        elif keys_path.suffix == ".json":
-            with open(keys_path) as f:
+            keys_path = self.find_local_env()
+            if keys_path is None:
+                raise ValueError("No .env file provided with API keys")
+            else:
+                keys = self.load_file(keys_path)
+                self.keys = dict(keys)
+         
+        else:
+
+            keys_path = Path(filename).expanduser().resolve()
+            if not keys_path.exists():
+                raise FileNotFoundError(f"Key file not found: {keys_path}")
+            else:
+                keys = self.load_file(keys_path)
+            self.keys = dict(keys)
+
+
+    def load_file(self, path: Path) -> dict:
+        
+        if path.name == ".env" or path.name.startswith(".env.") or path.suffix == ".env":
+            keys = dotenv_values(path)
+
+        elif path.suffix == ".json":
+            with open(path) as f:
                 keys = json.load(f)
         else:
-            raise ValueError("Unsupported key file type")
+            raise ValueError(f"Unsupported key file type: {path.suffix}")
 
-        self.keys = dict(keys)  # seal it
+        return dict(keys)
+
+
+    def find_local_env(self) -> Path | None:
+        # caller = file that instantiated KeyManager
+        frame = inspect.stack()[2]
+        caller_file = Path(frame.filename).resolve()
+        env_path = caller_file.parent / ".env"
+
+        return env_path if env_path.exists() else None
 
 
     def __getitem__(self, key: str) -> str:
@@ -62,7 +90,7 @@ class KeyManager:
 
 
     def get(self, key: str, default=None):
-        return self._keys.get(key, default)
+        return self.keys.get(key, default)
 
 
     def checkKeyExists(self, key):
