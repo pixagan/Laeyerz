@@ -23,7 +23,7 @@ from pathlib import Path
 import json
 from dotenv import load_dotenv
 from dotenv import dotenv_values
-load_dotenv()
+#load_dotenv()
 
 
 
