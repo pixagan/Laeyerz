@@ -20,19 +20,17 @@ PineconeEmbeddings module for Pinecone vector embeddings
 in the Laeyerz framework.
 """
 
-import os
+#import os
 from laeyerz.flow.Node import Node
 from pinecone.grpc import PineconeGRPC as Pinecone
 from pinecone import ServerlessSpec
 
-PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
-
+#PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 
 class PineconeEmbeddings(Node):
     
-    def __init__(self):
-        self.pc = Pinecone(api_key=PINECONE_API_KEY)
-
+    def __init__(self, node_name, config={}):
+        self.pc = Pinecone(api_key=config.get('api_key'))
 
 
     def encode(self, data):

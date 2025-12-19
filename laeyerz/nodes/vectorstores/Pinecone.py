@@ -18,18 +18,18 @@ in the Laeyerz framework.
 """
 # Pinecone Adapter
 
-import os
+#import os
 from pinecone.grpc import PineconeGRPC as Pinecone
 from pinecone import ServerlessSpec
 
-PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+#PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 
 
 class PineconeAdapter(Node):
     
-    def __init__(self, api_key=None, spec=None):
+    def __init__(self, node_name, config={}, spec=None):
 
-        self.pc   = Pinecone(api_key=PINECONE_API_KEY)
+        self.pc   = Pinecone(api_key=config.get('api_key'))
         self.spec = ServerlessSpec(cloud='aws', region='us-east-1')
 
 
@@ -158,7 +158,59 @@ class PineconeAdapter(Node):
 
 
 
+    def add_actions(self):
         
+           node_inputs = [
+            {
+                "name":"messages",
+                "type":"list",
+                "description":"The input messages to the model",
+                "inputType":"input",
+                "source":"",
+                "value":None
+            },
+            {
+                "name":"model",
+                "type":"str",
+                "description":"Input to the model",
+                "inputType":"input",
+                "source":"",
+                "value":None
+            },
+            {
+                "name":"tools",
+                "type":"list",
+                "description":"Input to the model",
+                "inputType":"input",
+                "source":"",
+                "value":None
+            }
+        ]
+        node_outputs = [
+            {
+                "name":"content",
+                "type":"string",
+                "description":"Output from the llm model"
+            },
+            {
+                "name":"tokens",
+                "type":"object",
+                "description":"Tokens Output"
+            },
+            {
+                "name":"finish_reason",
+                "type":"string",
+                "description":"Finish reason for the llm model"
+            },
+            {
+                "name":"tool_calls",    
+                "type":"list",
+                "description":"Tool calls for the llm model"
+            }
+        ]
+        self.add_action(action_name="store", function=self.call_llm, parameters=["model"], inputs=node_inputs, outputs=node_outputs, isDefault=True, description="Call the OpenAI LLM")
+        
+        self.add_action(action_name="search", function=self.call_llm, parameters=["model"], inputs=node_inputs, outputs=node_outputs, isDefault=True, description="Call the OpenAI LLM")
 
 #----------------------------------------------------------------------
 

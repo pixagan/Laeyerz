@@ -38,7 +38,15 @@ class OpenAILLMNode(Node):
             "view_type": "OpenAI",
             "view_subtype": "LLM",
         }
-        self.client = OpenAI(api_key=OPENAI_API_KEY)
+
+        self.client = None
+
+        if(config.get('api_key')):
+            self.client = OpenAI(api_key=config.get('api_key'))
+        else:
+            print("No API key provided")
+            raise ValueError("No API key provided")
+
         
         #adding llm actions
         node_inputs = [

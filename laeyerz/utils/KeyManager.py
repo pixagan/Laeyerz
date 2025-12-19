@@ -18,18 +18,40 @@ in the Laeyerz framework.
 """
 
 import os
+from pathlib import Path
+import json
 from dotenv import load_dotenv
+from dotenv import dotenv_values
 load_dotenv()
 
 
 
 class KeyManager:
     
-    def __init__(self, key_path):
+    def __init__(self, filename):
         print("Load API Keys")
-        self.key_path = key_path
-
+        self.key_path = filename
         self.keys = {}
+
+        keys_path = Path(filename).expanduser().resolve()
+        if not keys_path.exists():
+            raise FileNotFoundError(f"Key file not found: {keys_path}")
+
+        if keys_path.suffix == ".env":
+            keys = dotenv_values(keys_path)
+        elif keys_path.suffix == ".json":
+            with open(keys_path) as f:
+                keys = json.load(f)
+        else:
+            raise ValueError("Unsupported key file type")
+
+        self.keys = dict(keys)  # seal it
+
+
+    def __getitem__(self, key: str) -> str:
+        if key not in self.keys:
+            raise KeyError(f"Missing key: {key}")
+        return self.keys[key]
 
 
     def loadKeys(self):
@@ -39,21 +61,15 @@ class KeyManager:
         print("Keys")
 
 
-    def checkKey(self, key):
-        if key in self.keys:
-            return self.keys[key]
-        else:
-            return None
+    def get(self, key: str, default=None):
+        return self._keys.get(key, default)
 
 
-    def check_validity(self, key):
+    def checkKeyExists(self, key):
         if key in self.keys:
             return True
         else:
             return False
-
-
-        
 
 
 

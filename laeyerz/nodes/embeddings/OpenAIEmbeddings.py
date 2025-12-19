@@ -17,13 +17,14 @@ OpenAIEmbeddings module for OpenAI text embeddings
 in the Laeyerz framework.
 """
 
-import os
+#import os
 from openai import OpenAI
+from laeyerz.flow.Node import Node
 
-from dotenv import load_dotenv
-load_dotenv()
+#from dotenv import load_dotenv
+#load_dotenv()
 
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+#OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 
 default_messages = [
@@ -34,11 +35,12 @@ default_messages = [
 
 class OpenAIEmbeddings(Node):
 
-    def __init__(self, model_name='gpt-4o-mini'):
+    def __init__(self, node_name, config={}):
         print("Initializing OpenAI adapter")
+        super().__init__(node_name, config)
 
-        self.model = model_name
-        self.client =  OpenAI(api_key=OPENAI_API_KEY)
+        self.model  = config.get('model_name', 'gpt-4o-mini')
+        self.client =  OpenAI(api_key=config.get('api_key'))
 
 
     def encode(self, text):

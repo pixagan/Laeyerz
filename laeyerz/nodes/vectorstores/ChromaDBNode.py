@@ -20,7 +20,7 @@ from laeyerz.flow.Node import Action
 
 class ChromaDBNode(Node):
 
-    def __init__(self, node_name, params={}):
+    def __init__(self, node_name, config={}):
         super().__init__(node_type='Chroma', node_name=node_name, node_subtype='Vector Store', description='ChromaDB Node')
 
         self.client     = None

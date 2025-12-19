@@ -22,8 +22,8 @@ import os
 from supabase import create_client, Client
 
 class Supabase(Node):
-    def __init__(self, config={}):
-        self.client = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_KEY'))
+    def __init__(self, node_name, config={}):
+        self.client = create_client(config.get('SUPABASE_URL'), config.get('SUPABASE_KEY'))
 
 
     def fetch_data(self, table_name):

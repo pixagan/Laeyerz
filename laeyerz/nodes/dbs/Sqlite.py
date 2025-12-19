@@ -21,7 +21,7 @@ from laeyerz.flow.Node import Node
 
 class Sqlite(Node):
 
-    def __init__(self):
+    def __init__(self, node_name, config={}):
         super().__init__()
         self.sqlite_function = self.sqlite_function
         self.inputs = ['text', 'model']
@@ -30,10 +30,7 @@ class Sqlite(Node):
     def sqlite_function(self, inputs):
         """Sqlite function that processes inputs and returns output"""
         # Extract inputs - you can customize this based on your needs
-        text = inputs.get('text', '')
-        model = inputs.get('model', 'gpt-3.5-turbo')
-        
-        # Placeholder for OpenAI API call
+    
         # In a real implementation, you would call the OpenAI API here
         response = f"Sqlite processed: {text} using {model}"
         

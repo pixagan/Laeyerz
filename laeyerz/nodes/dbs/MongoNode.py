@@ -20,23 +20,23 @@ in the Laeyerz framework.
 from laeyerz.flow.Node import Node
 
 
-import os
+#import os
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 
-filepath = os.getenv('MONGO_URI')
-mongo_db = os.getenv('MONGO_DB')
+# filepath = os.getenv('MONGO_URI')
+# mongo_db = os.getenv('MONGO_DB')
 
 
 
 class MongoNode(Node):
 
     def __init__(self, node_name, config={}):
-        self.client = MongoClient(os.getenv('MONGO_URI'))
-        self.db     = self.client[os.getenv('MONGO_DB')]
-        print("MongoNode initialized", self.client, self.db, os.getenv('MONGO_URI'), os.getenv('MONGO_DB'))
-        #self.collection = self.db[os.getenv('MONGO_COLLECTION')]
+        self.client = MongoClient(config.get('MONGO_URI'))
+        self.db     = self.client[config.get('MONGO_DB')]
+        print("MongoNode initialized", self.client, self.db, config.get('MONGO_URI'), config.get('MONGO_DB'))
+        #self.collection = self.db[config.get('MONGO_COLLECTION')]
 
 
     def create_collection(self, collection_name):
