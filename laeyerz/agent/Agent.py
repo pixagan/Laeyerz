@@ -20,7 +20,7 @@ from laeyerz.utils.KeyManager import KeyManager
 #from laeyerz.nodes.llm.OpenAINode import OpenAINode as LLM
 
 
-class ToolReasoningAgent(Node):
+class Agent(Node):
 
    # def __init__(self, name, config, api_key_path, model, role, instructions, tools):
     def __init__(self, name, config):
@@ -91,8 +91,6 @@ class ToolReasoningAgent(Node):
     def run_agent(self, task, write_to_file=False):
 
         try:
-
-
             messages = [
                 {"role": "system", "content": f"You are a {self.role} agent."},
                 {"role": "user", "content": f"Your instructions for the task are : {self.agent_instructions}"},
@@ -109,7 +107,7 @@ class ToolReasoningAgent(Node):
             print("Active Tools : ")
             for tool in self.tool_descriptions:
                 print(tool["function"]["name"])
-            print("----------------------------------Tool Descriptions ------------------------------")
+            print("-------------------------------------------------------------------")
             
             while not isCompleted:
 

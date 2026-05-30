@@ -89,11 +89,20 @@ class APICallNode(Node):
                 timeout=timeout
             )
 
+            print("Calling API: ", url)
+
             # Try JSON first, fallback to text
             try:
                 parsed = resp.json()
             except ValueError:
                 parsed = None
+
+            print("Response: ", {
+                "status_code": resp.status_code,
+                "headers": dict(resp.headers),
+                "response": parsed,
+                "raw_text": resp.text
+            })
 
             return {
                 "status_code": resp.status_code,
