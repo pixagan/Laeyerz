@@ -20,7 +20,7 @@ from laeyerz.utils.KeyManager import KeyManager
 #from laeyerz.nodes.llm.OpenAINode import OpenAINode as LLM
 
 
-class Agent(Node):
+class ReActAgent(Node):
 
    # def __init__(self, name, config, api_key_path, model, role, instructions, tools):
     def __init__(self, name, config):
@@ -33,6 +33,7 @@ class Agent(Node):
         role         =  config.get("role")
         instructions = config.get("instructions")
         tools        = config.get("tools")
+        self.agent_type = "ReAct"
 
 
         if(config.get('max_steps')):
