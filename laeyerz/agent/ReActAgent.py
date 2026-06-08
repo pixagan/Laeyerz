@@ -104,8 +104,8 @@ class ReActAgent(Node):
             nSteps       = 0
             steps        = []
 
-            print("----------------------------------Tool Descriptions ------------------------------")
-            print("Active Tools : ")
+            print("----------------------------------Tools Provided ------------------------------")
+            #print("Active Tools : ")
             for tool in self.tool_descriptions:
                 print(tool["function"]["name"])
             print("-------------------------------------------------------------------")
@@ -134,7 +134,7 @@ class ReActAgent(Node):
                 })
 
                 print("----------------------------------Reasoning ------------------------------")
-                print(response["message"])
+                print(response["message"].content)
                 print("Tool Calls : ", response['tool_calls'])
                 print("----------------------------------Reasoning ------------------------------")
 
@@ -196,7 +196,7 @@ class ReActAgent(Node):
             return None
 
 
-        return agent_output
+        return agent_output, steps
         
 
 

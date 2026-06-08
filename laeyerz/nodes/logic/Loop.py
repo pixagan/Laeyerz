@@ -10,6 +10,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from laeyerz.flow.Node import Node
+
 
 class Loop(Node):
 
@@ -17,17 +19,80 @@ class Loop(Node):
         super().__init__(node_name, config)
         self.nIters = 0
         self.flow  = {}
+        self.node_action = None
+        self.run_loop = None
+
+        self.add_actions()
 
 
-    def add_flow(self, flow):
+    def set_flow(self, flow, type="flow", node_action=None):
         self.flow = flow
+        self.type = type
+
+        if type == "flow":
+            self.run_loop = self.run_flow_loop
+        elif type == "node":
+            self.run_loop = self.run_node_loop
+            self.node_action = node_action
 
 
-    def run(self, input_data):
+    def run_node_loop(self, input_data=[], nIters=1):
+        response = []
+
         nIters = len(input_data)
 
-        for flow in nIters:
-            self.flow.run(input_data[iter])
+        print("nIters: ", nIters)
+
+        for i in range(nIters):
+            output = self.flow.run(self.node_action, input_data[i])
+            response.append(output)
+        return response
+
+
+    def run_flow_loop(self, input_data=[], nIters=1):
+
+        response = []
+
+        nIters = len(input_data)
+
+        print("nIters: ", nIters)
+
+        for i in range(nIters):
+           
+            output = self.flow.run(input_data[i])
+            response.append(output)
+
+        return response
+
+
+    def add_actions(self):
+
+        loop_inputs = [
+            {
+                "name":"input_data",
+                "type":"list",
+                "description":"The list of input data to iterate over",
+                "inputType":"input",
+                "source":"",
+            },
+            {
+                "name":"nIters",
+                "type":"int",
+                "description":"The number of iterations to return",
+                "inputType":"input",
+                "source":"",
+            }
+        ]
+        loop_outputs = [
+            {
+                "name":"results",
+                "type":"list",
+                "description":"A list of outputs from the loop",
+            }
+        ]
+        self.add_action(action_name="run_loop", function=self.run_loop, parameters=[], inputs=loop_inputs, outputs=loop_outputs, isDefault=True, description="Run the loop")
+
+
 
 
 
