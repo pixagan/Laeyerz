@@ -24,6 +24,7 @@ from laeyerz.flow.AppState import AppState, GraphState
 from laeyerz.flow.Edge import Edge
 from laeyerz.flow.Evals import Evals
 from laeyerz.flow.DataConnections import DataConnections
+from laeyerz.flow.Steps import Steps
 
 class Flow:
 
@@ -385,6 +386,8 @@ class Flow:
 
         #print("Input Data : ", input_data)
 
+        steps = Steps()
+
         self.inputs = input_data
         for key, value in input_data.items():
             self.graph_state.update_state('INPUTS', key, value)
@@ -451,6 +454,16 @@ class Flow:
             #next_edge = curr_node.targets[0]
             curr_edge = self.edges[next_edge]
 
+            steps.add_step({
+                "step": nSteps,
+                "type":"node",
+                "inputs":inputd,
+                "outputs":outputs
+            })
+
+
+            nSteps = nSteps + 1
+
 
 
         run_outputs = {}
@@ -462,7 +475,10 @@ class Flow:
             print("Error getting outputs : ", e)
             run_outputs = {}
 
-        return run_outputs
+        return {
+            "outputs": run_outputs,
+            "steps": steps.get_steps()
+        }
 
 
     def to_dict(self):

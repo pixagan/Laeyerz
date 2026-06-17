@@ -17,6 +17,7 @@ import json
 
 from laeyerz.flow.Node import Node
 from laeyerz.utils.KeyManager import KeyManager
+from laeyerz.flow.Steps import Steps
 #from laeyerz.nodes.llm.OpenAINode import OpenAINode as LLM
 
 
@@ -29,10 +30,10 @@ class ReActAgent(Node):
 
         self.name = name
         api_key_path = config.get("api_key_path")
-        reasoner     = config.get("reasoner")
         role         =  config.get("role")
         instructions = config.get("instructions")
         tools        = config.get("tools")
+        reasoner     = config.get("reasoner")
         self.agent_type = "ReAct"
 
 
@@ -91,18 +92,21 @@ class ReActAgent(Node):
 
     def run_agent(self, task, write_to_file=False):
 
+        steps = Steps()
+
         try:
             messages = [
                 {"role": "system", "content": f"You are a {self.role} agent."},
                 {"role": "user", "content": f"Your instructions for the task are : {self.agent_instructions}"},
                 {"role": "user", "content": f"The inputs to the task are: {task}"},
+                {"role": "user", "content": f"The tools available to you are: {self.tool_descriptions}"},
             ]
 
             context      = []
             isCompleted  = False
             agent_output = None
             nSteps       = 0
-            steps        = []
+            #steps        = []
 
             print("----------------------------------Tools Provided ------------------------------")
             #print("Active Tools : ")
@@ -116,21 +120,25 @@ class ReActAgent(Node):
 
                 if(len(context) > 0):
                     
+                    
                     prompt_messages.append(
                         {
                             "role": "user", "content": f"Previous tool calls: {str(context)}"
                         }
                     )
-
                 
                 #print("Prompt Messages : ", prompt_messages)
                 #print("Tool Descriptions : ", self.tool_descriptions)
 
                 response = self.reasoning.call_llm(prompt_messages, self.tool_descriptions)
 
-                steps.append({
+                steps.add_step({
                     "step": nSteps,
-                    "node":"Reasoner"
+                    "type":"reasoner",
+                    "node":"Reasoner",
+                    "content": response["message"].content,
+                    "finish_reason": response['finish_reason'],
+                    "tool_calls": response['tool_calls']
                 })
 
                 print("----------------------------------Reasoning ------------------------------")
@@ -146,7 +154,10 @@ class ReActAgent(Node):
                     print("----------------------------------Max Steps Reached ------------------------------")
                     print("Max steps reached, stopping agent.")
                     isCompleted = True
-                    agent_output = response['message'].content
+                    agent_output_str = response['message'].content
+                    agent_output = {
+                        "output": agent_output_str
+                    }
                     print("----------------------------------Agent Response ------------------------------")
                     print(agent_output)
                     print("----------------------------------Agent Response ------------------------------")
@@ -154,7 +165,10 @@ class ReActAgent(Node):
 
                 
                 if finish_reason == "stop":
-                    agent_output = response['message'].content
+                    agent_output_str = response['message'].content
+                    agent_output = {
+                        "output": agent_output_str
+                    }
                     isCompleted  = True
                     print("----------------------------------Agent Response ------------------------------")
                     print(agent_output)
@@ -175,9 +189,11 @@ class ReActAgent(Node):
                             }
                         )
 
-                        steps.append({
+                        steps.add_step({
                             "step": nSteps,
-                            "node":"tool_name"
+                            "type":"tool",
+                            "node":"tool_name",
+                            "content": tool_output
                         })
 
                     print("----------------------------------Tool Response ------------------------------")
@@ -188,7 +204,11 @@ class ReActAgent(Node):
 
 
             if write_to_file:
-                self.export_run(task, steps, context, agent_output)
+                self.export_run(task, steps.get_steps(), context, agent_output)
+
+            print("----------------------------------Steps ------------------------------")
+            print(steps.get_steps())
+            print("----------------------------------Steps ------------------------------")
 
 
         except Exception as e:
@@ -196,7 +216,10 @@ class ReActAgent(Node):
             return None
 
 
-        return agent_output, steps
+        return {
+            "outputs": agent_output,
+            "steps": steps.get_steps()
+        }
         
 
 
