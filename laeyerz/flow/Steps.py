@@ -11,3 +11,8 @@ class Steps:
 
     def get_step(self, index):
         return self.steps[index]
+
+    def get_current_state(self):
+        current_state = []
+        
+        return self.steps

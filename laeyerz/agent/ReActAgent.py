@@ -100,6 +100,8 @@ class ReActAgent(Node):
                 {"role": "user", "content": f"Your instructions for the task are : {self.agent_instructions}"},
                 {"role": "user", "content": f"The inputs to the task are: {task}"},
                 {"role": "user", "content": f"The tools available to you are: {self.tool_descriptions}"},
+                {"role": "user", "content": f"For each tool call, explain in brief why you are calling the tool."},
+                {"role": "user", "content": f"When you draft the final response to the user who provided the task, do not the reasoning behind the steps and tool calls, just producte the final response as requested by the instructions and task."}
             ]
 
             context      = []
@@ -118,15 +120,22 @@ class ReActAgent(Node):
 
                 prompt_messages = messages.copy()
 
-                if(len(context) > 0):
+                # if(len(context) > 0):
                     
-                    
+                #     prompt_messages.append(
+                #         {
+                #             "role": "user", "content": f"Previous tool calls: {str(context)}"
+                #         }
+                #     )
+
+
+                current_state = steps.get_current_state()
+                if(len(current_state) > 0):
                     prompt_messages.append(
                         {
-                            "role": "user", "content": f"Previous tool calls: {str(context)}"
+                            "role": "user", "content": f"Current state of the task run: {str(current_state)}"
                         }
                     )
-                
                 #print("Prompt Messages : ", prompt_messages)
                 #print("Tool Descriptions : ", self.tool_descriptions)
 
@@ -141,7 +150,9 @@ class ReActAgent(Node):
                     "tool_calls": response['tool_calls']
                 })
 
-                print("----------------------------------Reasoning ------------------------------")
+                nSteps += 1
+
+                print("----------------------------------Reasoning " + str(nSteps) + " ------------------------------")
                 print(response["message"].content)
                 print("Tool Calls : ", response['tool_calls'])
                 print("----------------------------------Reasoning ------------------------------")
@@ -158,9 +169,9 @@ class ReActAgent(Node):
                     agent_output = {
                         "output": agent_output_str
                     }
-                    print("----------------------------------Agent Response ------------------------------")
+                    print("----------------------------------Final Agent Response ------------------------------")
                     print(agent_output)
-                    print("----------------------------------Agent Response ------------------------------")
+                    print("----------------------------------Final Agent Response ------------------------------")
                     break
 
                 
@@ -170,9 +181,9 @@ class ReActAgent(Node):
                         "output": agent_output_str
                     }
                     isCompleted  = True
-                    print("----------------------------------Agent Response ------------------------------")
+                    print("----------------------------------Final Agent Response ------------------------------")
                     print(agent_output)
-                    print("----------------------------------Agent Response ------------------------------")
+                    print("----------------------------------FinalAgent Response ------------------------------")
                     break
 
                 elif finish_reason == "tool_calls":
@@ -192,28 +203,34 @@ class ReActAgent(Node):
                         steps.add_step({
                             "step": nSteps,
                             "type":"tool",
-                            "node":"tool_name",
+                            "node":tool_name,
                             "content": tool_output
                         })
 
-                    print("----------------------------------Tool Response ------------------------------")
-                    print(tool_output)
-                    print("----------------------------------Tool Response ------------------------------")
+                        print("----------------------------------Tool Response " + str(nSteps) + " | " + tool_name + " ------------------------------")
+                        print(tool_output)
+                        print("----------------------------------Tool Response ------------------------------")
 
-                nSteps += 1
+                        nSteps += 1
 
 
             if write_to_file:
                 self.export_run(task, steps.get_steps(), context, agent_output)
 
-            print("----------------------------------Steps ------------------------------")
-            print(steps.get_steps())
-            print("----------------------------------Steps ------------------------------")
+            # print("----------------------------------Steps ------------------------------")
+            # print(steps.get_steps())
+            # print("----------------------------------Steps ------------------------------")
 
 
         except Exception as e:
-            print("Error in ToolReasoningAgent: ", e)
-            return None
+            print("Error in Agent: ", e)
+            error_response = {
+                "error": str(e),
+            }
+            return {
+            "outputs":error_response, 
+            "steps": steps.get_steps()
+            }
 
 
         return {
@@ -239,6 +256,44 @@ class ReActAgent(Node):
             }, f)
 
 
+
+    def export_model(self):
+
+        tools = []
+
+        for tool in self.tool_descriptions:
+            newTool = {
+                "type": "function",
+                "name": tool["function"]["name"],
+                "description": tool["function"]["description"],
+                "inputs":[]
+            }
+
+            for name, value in tool["function"]["parameters"]["properties"].items():
+                newTool["inputs"].append({
+                    "name": name,
+                    "type": value["type"],
+                    "description": value["description"]
+                })
+            tools.append(newTool)
+
+
+        agent_model = {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "config":{},
+            "tools": tools,
+            "reasoner": {
+                "model": self.reasoning.model,
+            },
+            "config":{
+                "max_steps": self.max_steps
+            }
+        }
+        return agent_model
+
+
     def add_actions(self):
 
         node_inputs = [
@@ -253,10 +308,15 @@ class ReActAgent(Node):
         ]
         node_outputs = [
             {
-                "name":"agent_output",
+                "name":"outputs",
                 "type":"dict",
-                "description":"Output from the agent"
+                "description":"Outputs from the agent"
             },
+            {
+                "name":"steps",
+                "type":"list",
+                "description":"Steps taken by the agent"
+            }
         ]
-        self.add_action(action_name="run_agent", function=self.run_agent, parameters=["task"], inputs=node_inputs, outputs=node_outputs, isDefault=True, description="Run the agent")
+        self.add_action(action_name="run_agent", function=self.run_agent, parameters={}, inputs=node_inputs, outputs=node_outputs, isDefault=True, description="Run the agent")
         

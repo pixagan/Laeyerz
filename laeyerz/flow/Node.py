@@ -100,7 +100,6 @@ class Action:
         action_dict = {
             "id": self.id,
             "action_name": self.action_name,
-            "function": "",
             "inputs": self.inputs,
             "parameters": self.parameters,
             "outputs": self.outputs,
@@ -316,21 +315,18 @@ class Node:
 
     def to_dict(self):
 
+        actions = []
+        for key, value in self.actions.items():
+            actions.append(value.to_dict())
+
         return {
             "node_id": str(self.id),
             'id': self.name,
             'name': self.name,
-            'metadata': self.metadata,
-            'view': self.view,
-            # 'node_subtype': self.node_subtype,
-            # 'node_type': self.node_type,
             'description': self.description,
-            'actions': [],
-            'inputs': self.inputs,
-            'outputs': self.outputs
+            'actions': actions,
             }
 
-            #'action': self.action,
 
 
     def next_node(self, inputs, app_state):

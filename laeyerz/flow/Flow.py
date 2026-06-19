@@ -639,6 +639,87 @@ class Flow:
         return True
 
 
+    def export_model(self):
+
+        flow_model = {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "config":{},
+            "nodes": [],
+            "edges": [],
+            "datasources": [],
+        }
+
+        inputlist = []
+        for key, value in self.inputs.items():
+            inputlist.append(key)
+
+        flow_nodes = []
+        data_sources = []
+        for key, node in self.nodes.items():
+            node_str = node.to_dict()
+            flow_nodes.append(node_str)
+
+        flow_model['nodes'] = flow_nodes
+
+
+        datasources = []
+        nDatasources = 0
+
+        for action in self.active_actions:
+
+            node_str = action.split("|")
+            node_id = action
+
+            source_node   = node_str[0]
+            source_action = node_str[1]
+
+            curr_node     = self.nodes[source_node]
+
+            curr_action    = curr_node.actions[source_action]
+            action_inputs  = curr_action.inputs
+            action_outputs = curr_action.outputs
+
+            node_inputs = []
+            for cinput in action_inputs:
+                node_inputs.append(cinput['name'])
+                if(cinput['final_source']['node'] == "INPUTS"):
+                    source = "INPUTS"
+                else:
+                    source = cinput['final_source']['node'] + "|" + cinput['final_source']['action']
+                datasources.append(
+                    {
+                        "id": str(nDatasources),
+                        "name": node_id + "|" + cinput['name'],
+                        "source": source,
+                        "sourceHandle": source + "|" + cinput['final_source']['socket'],
+                        "target": node_id,
+                        "targetHandle": node_id + "|" + cinput['name'],
+                    }
+                )
+                nDatasources += 1
+
+            node_outputs = []
+            for iout, coutput in enumerate(action_outputs):
+                node_outputs.append(coutput['name'])
+
+            flow_model['datasources'] = datasources
+
+
+
+        flow_edges = []
+        for key, edge in self.edges.items():
+            edge_str = edge.to_dict()
+            flow_edges.append(edge_str)
+
+        flow_model['edges'] = flow_edges
+
+
+        return flow_model
+
+
+
 def main():
 
     flow = Flow()
