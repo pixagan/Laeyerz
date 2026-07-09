@@ -290,7 +290,7 @@ class Agent(Node):
         ]
         node_outputs = [
             {
-                "name":"agent_output",
+                "name":"outputs",
                 "type":"dict",
                 "description":"Output from the agent"
             },

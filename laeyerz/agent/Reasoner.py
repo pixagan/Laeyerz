@@ -28,7 +28,8 @@ class Reasoner(Node):
             {"role": "user", "content": f"The tools available to you are: {tool_descriptions}"},
             {"role": "user", "content": f"The inputs to the task are: {task}"},
             {"role": "user", "content": f"For each tool call, explain in brief why you are calling the tool."},
-            {"role": "user", "content": f"When you draft the final response to the user who provided the task, do not the reasoning behind the steps and tool calls, just producte the final response as requested by the instructions and task."}
+            {"role": "user", "content": f"When you draft the final response to the user who provided the task, do not the reasoning behind the steps and tool calls, just producte the final response as requested by the instructions and task."},
+            {"role": "user", "content": f"If the latest tool call returns an error, see if the error is recoverable or if any other tool can be called instead. If not respond with the error message and the task should be aborted."}
         ]
 
 

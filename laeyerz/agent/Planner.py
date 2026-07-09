@@ -19,20 +19,20 @@ class Planner(Node):
         You will be given the task description and the tools available to you.
         You need to create a plan for the agent to complete the task. The plan should be a sequence of steps.
         Each step is a single tool call. The sequence of steps should result in the task being completed.
-
-        Respond in the following JSON format:
+        
+        Respond ONLY with the plan in the following JSON format. Do not include any other text or comments:
         {
             "steps": [
                 {
                     "step": 1,
-                    "description": "Step 1 description", // a brief description of the step
+                    "description": "Step 1 description", 
                     "tool": "tool_name",
                 },
                 {
                     "step": 2,
-                    "description": "Step 2 description", // a brief description of the step
+                    "description": "Step 2 description", 
                     "tool": "tool_name"
-                },
+                }
                 ...
             ]
         }
@@ -51,7 +51,11 @@ class Planner(Node):
 
         response = self.llm.call_llm(messages)
 
-        plan = json.loads(response["message"].content)
+        plan = response["message"].content
+
+        print("Plan: ", plan)
+
+        plan = json.loads(plan)
         
         return plan
 
