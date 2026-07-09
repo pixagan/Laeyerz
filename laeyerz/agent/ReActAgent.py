@@ -34,18 +34,23 @@ class ReActAgent(Node):
         instructions = config.get("instructions")
         tools        = config.get("tools")
         reasoner     = config.get("reasoner")
+        output_requirements = config.get("output_requirements")
         self.agent_type = "ReAct"
 
 
         if(config.get('max_steps')):
             self.max_steps = config.get("max_steps")
         else:
-            self.max_steps = 10
+            self.max_steps = 20
         
         
         #self.model = model
         self.role = role
-        self.agent_instructions = instructions   
+        self.agent_instructions = instructions  
+        if(output_requirements):
+            self.output_requirements = output_requirements
+        else:
+            self.output_requirements = None
         self.tools = tools
         self.tool_descriptions = []
         self.km = None
@@ -103,6 +108,13 @@ class ReActAgent(Node):
                 {"role": "user", "content": f"For each tool call, explain in brief why you are calling the tool."},
                 {"role": "user", "content": f"When you draft the final response to the user who provided the task, do not the reasoning behind the steps and tool calls, just producte the final response as requested by the instructions and task."}
             ]
+
+            if(self.output_requirements):
+                messages.append(
+                    {
+                        "role": "user", "content": f"The output requirements and formatfor the task are: {self.output_requirements}. You final response should match the output requirements and format. "
+                    }
+                )
 
             context      = []
             isCompleted  = False
