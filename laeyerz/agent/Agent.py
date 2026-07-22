@@ -1,3 +1,17 @@
+# Copyright 2025 Pixagan Technologies
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from datetime import datetime
 import json
 
@@ -92,8 +106,9 @@ class Agent(Node):
         
 
 
-        plan = self.planner.plan_task(self.agent_instructions, tool_descriptions)
-        print("Plan: ", plan)
+        #plan = self.planner.plan_task(self.agent_instructions, tool_descriptions)
+        #print("Plan: ", plan)
+        plan = {}
 
         state.update_plan(plan)
 
@@ -123,7 +138,7 @@ class Agent(Node):
             #----- Reason --------------------
             response = self.reasoner.reason(state.get_steps())
 
-            print("Reasoner Response: ", response)
+            #print("Reasoner Response: ", response)
 
             finish_reason = response['finish_reason']
             tool_calls    = response['tool_calls']
@@ -137,10 +152,12 @@ class Agent(Node):
                 "tool_calls": response['tool_calls']
             })
 
+            print("\n")
             print("----------------------------------Reasoning " + str(nSteps) + " ------------------------------")
             print(response["content"])
             print("Tool Calls : ", response['tool_calls'])
             print("----------------------------------Reasoning ------------------------------")
+            print("\n")
 
             nReasonerSteps += 1
             nSteps += 1
@@ -179,6 +196,7 @@ class Agent(Node):
                     print("----------------------------------Tool Response " + str(nSteps) + " ------------------------------")
                     print(tool_output)
                     print("----------------------------------Tool Response ------------------------------")
+                    print("\n")
 
 
                     nToolSteps += 1
@@ -201,10 +219,12 @@ class Agent(Node):
 
 
 
+
+        print("\n")
         print("----------------------------------Agent Response ------------------------------")
         print(agent_output)
         print("----------------------------------Agent Response ------------------------------")
- 
+        print("\n")
 
         steps = state.get_steps()
 
@@ -214,6 +234,10 @@ class Agent(Node):
             "output": user_response,
             "task_keypoints": task_keypoints
         }
+
+
+        if write_to_file:
+            self.export_run(task, steps, {}, agent_output)
 
         return {"outputs": agent_output, "steps": steps}
 
