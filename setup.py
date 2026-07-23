@@ -13,7 +13,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         "requests",
-        "python-dotenv"
+        "python-dotenv",
+        "simplejson",
+        "uuid",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

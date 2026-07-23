@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from laeyerz.flow.Node import Node
-from llmbox.LLMNode import LLMNode
 
 class Reasoner(Node):
 

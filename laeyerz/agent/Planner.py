@@ -15,7 +15,6 @@
 import simplejson as json
 
 from laeyerz.flow.Node import Node
-from llmbox.LLMNode import LLMNode
 
 class Planner(Node):
 

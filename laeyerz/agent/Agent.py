@@ -56,7 +56,7 @@ class Agent(Node):
         if api_key_path:
             self.km = KeyManager(api_key_path)
         else:
-            self.km = KeyManager()
+            self.km = None
 
 
         self.reasoner = Reasoner("Reasoner", config={
