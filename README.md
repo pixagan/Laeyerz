@@ -32,7 +32,64 @@ pip install -e .
 https://github.com/pixagan/laeyerz-examples
 
 
-## Let us now create our first simple workflow graph using Laeyerz.
+# Creating an Agent with Laeyerz
+
+### initialize an LLM Node as the reasoner for the agent
+```python
+from laeyerz_nodes.llm.OpenAINode import OpenAINode as LLM
+reasoner_llm =  LLM("AgentReasoner",  config={"api_key": api_key, "model":"gpt-5-mini"})
+```
+### Define the role and instructions for the agent
+```python
+role = "You are an Expense Classifier"
+instructions = """You will be given a message describing the transaction. .... with the transaction details.
+
+Tools provided
+add_income : Update the income database
+add_expense: Update the expense database
+"""
+```
+
+### Initialize the Agent
+```python
+from laeyerz.agent.Agent import Agent
+agent = Agent( name="IncomeExpenseClassifier", config = {
+        "reasoner":reasoner_llm, 
+        "role":role, 
+        "instructions":instructions, 
+        "tools":{}
+})
+```
+
+### Adding a Tool to the agent
+```python
+agent.add_tool({
+    "name": "name_of_the_function",
+    "description": "description_of_the_function",
+    "inputs": [
+        {
+            "name": "input_variable_name",
+            "type": "input_type : string/number",
+            "description": "A description of the input variable"
+        },
+        ...
+    ],
+    "outputs": [a list of the output variables and types similar to input],
+    "function": tool_function()
+})
+```
+
+### Running the Agent
+Define the inputs as a dictionary, use the agent.run_agent() function as shown belwo.
+```python
+agent_inputs = {
+ "input1":input1
+}
+agent.run_agent(task=agent_inputs, write_to_file=True)
+```
+
+# To Create a Graph based Workflow
+## Let us now create our first simple Workflow Graph using Laeyerz.
 
 
 ### Import the Node and Flow
