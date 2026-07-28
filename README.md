@@ -78,6 +78,14 @@ agent.add_tool({
     "function": tool_function()
 })
 ```
+### Allowable Input Output Data Types
+string
+number
+integer
+boolean
+object
+array
+
 
 ### Running the Agent
 Define the inputs as a dictionary, use the agent.run_agent() function as shown belwo.
