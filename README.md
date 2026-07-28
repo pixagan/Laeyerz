@@ -79,12 +79,12 @@ agent.add_tool({
 })
 ```
 ### Allowable Input Output Data Types
-string
-number
-integer
-boolean
-object
-array
+- string
+- number
+- integer
+- boolean
+- object
+- array
 
 
 ### Running the Agent
