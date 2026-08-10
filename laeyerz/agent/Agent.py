@@ -136,7 +136,8 @@ class Agent(Node):
         while not isCompleted:
 
             #----- Reason --------------------
-            response = self.reasoner.reason(state.get_steps())
+            reasoner_input = state.get_state()
+            response = self.reasoner.reason(state.get_state())
 
             #print("Reasoner Response: ", response)
 
@@ -146,10 +147,18 @@ class Agent(Node):
             state.add_step({
                 "step": nSteps,
                 "type":"reasoner",
-                "node":"Reasoner",
+                "name":"Reasoner_LLM",
                 "content": response["content"],
                 "finish_reason": response['finish_reason'],
-                "tool_calls": response['tool_calls']
+                "tool_calls": response['tool_calls'],
+                "inputs":{
+                    "state": reasoner_input
+                },
+                "outputs":{
+                    "content": response["content"],
+                    "finish_reason": response['finish_reason'],
+                    "tool_calls": response['tool_calls']
+                }
             })
 
             print("\n")
@@ -188,8 +197,15 @@ class Agent(Node):
                     state.add_step({
                         "step": nSteps,
                         "type":"tool",
-                        "node":tool_name,
-                        "content": tool_output
+                        "name":tool_name,
+                        "content": tool_output,
+                        "inputs":{
+                            "tool_name": tool_name,
+                            "tool_args": tool_args
+                        },
+                        "outputs":{
+                            "tool_output": tool_output
+                        }
                     })
 
                     print("\n")
@@ -228,11 +244,12 @@ class Agent(Node):
 
         steps = state.get_steps()
 
-        user_response, task_keypoints = self.responder.respond(task, steps, completion_status)
+        user_response, task_keypoints, requested_parameters = self.responder.respond(task,  self.agent_instructions, agent_output, steps, completion_status)
 
         agent_output = {
             "output": user_response,
-            "task_keypoints": task_keypoints
+            "task_keypoints": task_keypoints,
+            "requested_parameters": requested_parameters
         }
 
 
@@ -255,7 +272,9 @@ class Agent(Node):
                 "task": task,
                 "steps": steps,
                 "context": context,
-                "agent_output": agent_output
+                "agent_output": agent_output["output"],
+                "requested_parameters": agent_output["requested_parameters"],
+                "task_keypoints": agent_output["task_keypoints"]
             }, f)
 
 

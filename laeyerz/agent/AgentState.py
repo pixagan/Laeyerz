@@ -36,7 +36,16 @@ class AgentState(Node):
 
 
     def get_state(self):
-        return self.config.get("state")
+        state = []
+        for step in self.steps.get_steps():
+            state.append({
+                "step": step["step"],
+                "type": step["type"],
+                "name": step["name"],
+                "content": step["content"],
+            })
+        return state
+
 
     def set_state(self, state):
         self.config["state"] = state

@@ -457,6 +457,7 @@ class Flow:
             steps.add_step({
                 "step": nSteps,
                 "type":"node",
+                "name":next_node+"|"+next_action,
                 "inputs":inputd,
                 "outputs":outputs
             })
